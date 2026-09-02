@@ -1,0 +1,26 @@
+.idea/
+# --- Build output ---
+target/
+
+# --- IDE ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# --- Logs / OS ---
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# Local backups (never commit)
+*.bak
+
+# --- Local developer overrides (hold the client secrets) — never commit ---
+config/application-local.properties
+application-local.properties

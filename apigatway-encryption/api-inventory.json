@@ -1,0 +1,3493 @@
+{
+  "http_client": {
+    "library": "Retrofit 2.9.0 + OkHttp 4.9.1 + Gson",
+    "di_module": "app/src/main/java/com/wallet/barakatpay/di/module/NetworkModule.kt",
+    "api_interface": "app/src/main/java/com/wallet/barakatpay/core/remote/networkapi/ApiInterface.kt",
+    "pattern": "Dynamic @Path endPoint — all paths defined in EndPoints.kt",
+    "encryption_at_runtime": false,
+    "notes": "isRequestResponseNotEncrypted hardcoded true in AppRepositoryImp; bodies sent as plain JSON"
+  },
+  "base_urls": [
+    {
+      "name": "BASE_URL",
+      "build_config": "SERVER_URL",
+      "url_uat": "http://80.238.228.115:8000/",
+      "url_production": "http://58.65.160.27:8181/",
+      "usage": "Default for app/v1/* endpoints"
+    },
+    {
+      "name": "DC_URL",
+      "build_config": "DC_URL",
+      "url_uat": "http://80.238.228.115:8000/",
+      "url_production": "http://58.65.160.27:9600/",
+      "usage": "Transactions, cards, bills, BBS-SDK liveness"
+    },
+    {
+      "name": "SERVER_URL_MINI",
+      "build_config": "SERVER_URL_MINI",
+      "url_uat": "http://80.238.228.115:8000/",
+      "url_production": "https://192.168.18.3:8080/v1/",
+      "usage": "Defined in DI; no active call sites"
+    },
+    {
+      "name": "BASE_URL_LIVELINESS",
+      "build_config": "BASE_URL_LIVELINESS",
+      "url_uat": "http://80.238.228.115:8000/",
+      "url_production": "https://80.238.228.115:8448/",
+      "usage": "Only referenced in commented-out upload code"
+    }
+  ],
+  "common_headers": [
+    "Accept: application/json",
+    "X-Accept-Encoding: ",
+    "X-Accept-Decoding: ",
+    "Authorization: {access_token}",
+    "Access_Token: {access_token_global}",
+    "AppVersion: {encrypted_app_version}",
+    "DeviceName: {device_name}",
+    "DeviceID: {device_imei}",
+    "USER: {user_id}",
+    "NO: {mobile_number}",
+    "imei: {imei}",
+    "AndroidVersion: {android_version}",
+    "AndroidUpdate: {android_version}",
+    "IsAndroid: true",
+    "Language: English",
+    "Client: Android"
+  ],
+  "endpoints": [
+    {
+      "id": 1,
+      "name": "SIGN_UP_VERIFY_NUMBER",
+      "method": "POST",
+      "path": "app/v1/mobileRegistration",
+      "full_url": "http://80.238.228.115:8000/app/v1/mobileRegistration",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "appVersion": "string",
+          "mobileNo": "string",
+          "deviceModel": "string",
+          "imeiNo": "string",
+          "ipAddressP": "string",
+          "ipAddressA": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "authToken": "string",
+          "generateOtpResponse": {
+            "mobileNumber": "string",
+            "otpId": "string",
+            "otpCode": "string",
+            "email": "string",
+            "expiryDateTime": "string",
+            "status": "string"
+          }
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "MobileOTPGenerateRequest / MobileOTPGenerateResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 2,
+      "name": "MOBILE_VERIFICATION",
+      "method": "POST",
+      "path": "app/v1/deviceRegistration",
+      "full_url": "http://80.238.228.115:8000/app/v1/deviceRegistration",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "otpId": "string",
+          "otpPin": "string",
+          "otpType": "string",
+          "userType": "string",
+          "mobileNumber": "string",
+          "email": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": [
+          {
+            "name": "string",
+            "code": "string",
+            "id": "integer"
+          }
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "MobileVerifyRequest / MobileOTPVerifyResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 3,
+      "name": "SET_LOGIN_PIN",
+      "method": "POST",
+      "path": "app/v1/customerKyc",
+      "full_url": "http://80.238.228.115:8000/app/v1/customerKyc",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "fullName": "string",
+          "fatherName": "string",
+          "grandFatherName": "string",
+          "mobileNumber": "string",
+          "gender": "string",
+          "tazkiraNumber": "string",
+          "dob": "string",
+          "placeOfBirth": "string",
+          "nationality": "string",
+          "provinceCode": "string",
+          "tazkiraIssuenceDate": "string",
+          "permenantAddress": "string",
+          "tazkiraExpiryDate": "string",
+          "barkatPayId": "string",
+          "pin": "string",
+          "confirmMpin": "string",
+          "livenessScore": "string",
+          "matchScore": "string",
+          "mrzData": "string",
+          "districtCode": "string",
+          "documents": [
+            {
+              "base64": "string",
+              "docFileName": "string",
+              "contentType": "string"
+            }
+          ]
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "appUserId": "integer",
+          "customerId": "integer",
+          "mobileNo": "string",
+          "userId": "string",
+          "username": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "SignupFieldsNavigationModel / GeneratePinResponseSignUp",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 4,
+      "name": "BAL_INQUIRY",
+      "method": "POST",
+      "path": "app/v1/getbalance",
+      "full_url": "http://80.238.228.115:8000/app/v1/getbalance",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "accountLevelCode": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "balance": "integer"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "BalanceInquiryReq / BalanceInquryResp",
+      "notes": "features/dashboard/viewmodel/DashBoardViewModel.kt"
+    },
+    {
+      "id": 5,
+      "name": "MINI_STATEMENT",
+      "method": "POST",
+      "path": "app/v1/miniStatment",
+      "full_url": "http://80.238.228.115:8000/app/v1/miniStatment",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "accountLevelCode": "string",
+          "fromDate": "string",
+          "toDate": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "integer",
+        "messages": "string",
+        "data": [
+          {
+            "transDate": "string",
+            "transRefnum": "string",
+            "txnAmt": "string",
+            "amountType": "string",
+            "toAccountTitle": "string",
+            "fromAccountTitle": "string",
+            "status": "string"
+          }
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "BLBWalletStatementRequest / WalletStatementResponse",
+      "notes": "features/transactionhistory/viewmodel/HistoryViewModel.kt"
+    },
+    {
+      "id": 6,
+      "name": "GET_SPENDING",
+      "method": "GET",
+      "path": "app/v1/spending/{id}",
+      "full_url": "http://80.238.228.115:8000/app/v1/spending/{id}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (accountId passed as path parameter)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "amountSent": "string",
+          "countSent": "string",
+          "amountReceived": "string",
+          "countReceived": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String accountId / SpendingResponse",
+      "notes": "features/transactionhistory/viewmodel/HistoryViewModel.kt"
+    },
+    {
+      "id": 7,
+      "name": "DOC_LIVENESS",
+      "method": "POST",
+      "path": "bbs-sdks/api/document-liveness",
+      "full_url": "http://80.238.228.115:8000/bbs-sdks/api/document-liveness",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android",
+        "Content-Type: multipart/form-data"
+      ],
+      "request_body": {
+        "base64Image": "string",
+        "base64Video": "string"
+      },
+      "response_body": {
+        "recommendations": "string",
+        "liveness_result": "string",
+        "confidence_score": "number",
+        "risk_factors": [
+          "string"
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LivenessCheckRequest / LivenessCheckResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt; Content-Type: multipart/form-data for docLiveness ApiInterface method"
+    },
+    {
+      "id": 8,
+      "name": "DOC_EXTRACT",
+      "method": "POST",
+      "path": "bbs-sdks/api/extract",
+      "full_url": "http://80.238.228.115:8000/bbs-sdks/api/extract",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "base64Image": "string",
+        "base64Video": "string"
+      },
+      "response_body": {
+        "extractedInfo": {
+          "english": {
+            "id_number": "string",
+            "name": "string",
+            "date_of_birth": "string",
+            "mrz": "string"
+          }
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LivenessCheckRequest / DocExtractResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 9,
+      "name": "FACE_LIVENESS",
+      "method": "POST",
+      "path": "bbs-sdks/api/face-liveness",
+      "full_url": "http://80.238.228.115:8000/bbs-sdks/api/face-liveness",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "base64Image": "string",
+        "base64Video": "string"
+      },
+      "response_body": {
+        "recommendations": "string",
+        "liveness_result": "string",
+        "confidence_score": "number"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LivenessCheckRequest / LivenessCheckResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 10,
+      "name": "FACE_MATCH",
+      "method": "POST",
+      "path": "bbs-sdks/api/match",
+      "full_url": "http://80.238.228.115:8000/bbs-sdks/api/match",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "idCardBase64": "string",
+        "selfieBase64": "string"
+      },
+      "response_body": {
+        "match": "boolean",
+        "similarity": "string",
+        "message": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "FaceMatchRequest / FaceMatchResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 11,
+      "name": "CHANGE_PIN",
+      "method": "POST",
+      "path": "app/v1/changempin",
+      "full_url": "http://80.238.228.115:8000/app/v1/changempin",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "currentMpin": "string",
+          "newMpin": "string",
+          "confirmMpin": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ChangePinRequest / ChangePinResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 12,
+      "name": "RESET_PIN",
+      "method": "POST",
+      "path": "app/v1/resetpin",
+      "full_url": "http://80.238.228.115:8000/app/v1/resetpin",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "step": "string",
+          "mobileNumber": "string",
+          "verifyOtpRequest": {
+            "otpId": "string",
+            "otpPin": "string",
+            "otpType": "string",
+            "userType": "string"
+          },
+          "verifyOtpResponse": {
+            "otpId": "string",
+            "status": "string"
+          },
+          "newPassword": "string",
+          "confirmPassword": "string"
+        }
+      },
+      "response_body": {
+        "responseCode": "string",
+        "responseDescription": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenerateForgotOTPRequest | VerifyForgotRequest | ResetPINRequest / GenerateForgotOTPResponse | VerifyForgotResponse",
+      "notes": "features/forgotpin/mobileotp/ForgotPinOTPViewModel.kt; multi-step forgot PIN flow"
+    },
+    {
+      "id": 13,
+      "name": "AUTHENTICATE_TOKEN",
+      "method": "POST",
+      "path": "app/v1/validateLoginSession",
+      "full_url": "http://80.238.228.115:8000/app/v1/validateLoginSession",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "imieNo": "string",
+        "segment": "string",
+        "payload": {
+          "accountNo": "string",
+          "autoLoginToken": "string",
+          "fireBaseToken": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "customerId": "integer",
+          "accountNo": "string",
+          "currentBalance": "integer",
+          "token": "string",
+          "autoLoginToken": "string",
+          "twoFAEnabled": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ValidateTokenRequest / LoginResponse",
+      "notes": "features/splash/viewmodel/SplashViewModel.kt"
+    },
+    {
+      "id": 14,
+      "name": "GET_CATEGORIES",
+      "method": "GET",
+      "path": "app/v1/getCategories",
+      "full_url": "http://80.238.228.115:8000/app/v1/getCategories",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": [
+          {
+            "name": "string",
+            "code": "string",
+            "id": "integer"
+          }
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / CategoriesResponse",
+      "notes": "features/transactionhistory/viewmodel/HistoryViewModel.kt"
+    },
+    {
+      "id": 15,
+      "name": "INITIATE_LOCAL_IFT",
+      "method": "POST",
+      "path": "transactions/v1/initiateLocalFT",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/initiateLocalFT",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "amount": "string",
+          "accountNo": "string",
+          "accountType": "string",
+          "tazkira": "string",
+          "transPurpose": "string",
+          "mobileNumber": "string",
+          "type": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "authIdResponse": "string",
+          "accountTitle": "string",
+          "fee": "integer",
+          "generateOtpResponse": {
+            "otpId": "string",
+            "otpCode": "string"
+          }
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "PaymentInquiryZindigi / PaymentInquiryZindagiResponse",
+      "notes": "features/transfermoney/barakat/viewModel/Z_to_Z_ViewModel.kt"
+    },
+    {
+      "id": 16,
+      "name": "FUNDS_TRANSFER_LOCAL",
+      "method": "POST",
+      "path": "transactions/v1/fundsTransferLocal",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/fundsTransferLocal",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "amount": "string",
+          "accountTitle": "string",
+          "accountNo": "string",
+          "narration": "string",
+          "transPurpose": "string",
+          "mpin": "string",
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "stan": "string",
+          "retrievalReferenceNumber": "string",
+          "responseCode": "string",
+          "availableBalance": "string",
+          "fee": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ZToZReviewRequest / TransferResponse (via ReviewViewModel JsonObject)",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 17,
+      "name": "VERIFY_OTP_COMMON",
+      "method": "POST",
+      "path": "transactions/v1/qrVerifyOtp",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/qrVerifyOtp",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "otpId": "string",
+          "otpPin": "string",
+          "otpType": "string",
+          "userType": "string",
+          "mobileNumber": "string",
+          "email": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "tries": "string",
+          "otpId": "string",
+          "status": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "VerifyOTPCommon / VerifyOTPResponse",
+      "notes": "features/verifyotp/VerifyOtpViewModel.kt"
+    },
+    {
+      "id": 18,
+      "name": "INQUIRY_CARD",
+      "method": "POST",
+      "path": "transactions/v1/initiateCardTitleFetch",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/initiateCardTitleFetch",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "pan": "string",
+          "amount": "string",
+          "type": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "cardTitle": "string",
+          "fee": "string",
+          "transPurposes": [
+            {
+              "name": "string",
+              "code": "string",
+              "id": "integer"
+            }
+          ]
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "CardRequest / CardResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 19,
+      "name": "TRANSFER_CARD",
+      "method": "POST",
+      "path": "transactions/v1/fundTransferCard",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/fundTransferCard",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "accountNo": "string",
+          "transPurposeId": "string",
+          "pan": "string",
+          "amount": "string",
+          "mpin": "string",
+          "accountTitle": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "stan": "string",
+          "retrievalReferenceNumber": "string",
+          "availableBalance": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "TransferRequest / TransferResponse",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 20,
+      "name": "BANKS",
+      "method": "GET",
+      "path": "transactions/v1/getAllBank",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/getAllBank",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": [
+          {
+            "name": "string",
+            "code": "string",
+            "bin": "string",
+            "imd": "string",
+            "id": "integer"
+          }
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / BanksResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 21,
+      "name": "AF_PAY",
+      "method": "POST",
+      "path": "transactions/v1/cardTransferFund",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/cardTransferFund",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "accountNo": "string",
+          "pan": "string",
+          "amount": "string",
+          "mpin": "string",
+          "expiry": "string",
+          "cvc": "string",
+          "otpPin": "string",
+          "rrn": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "stan": "string",
+          "availableBalance": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "AFPayRequest / AFPayResponse",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 22,
+      "name": "CARD_TO_CARD",
+      "method": "POST",
+      "path": "transactions/v1/cardtocard",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/cardtocard",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "fromPan": "string",
+          "toPan": "string",
+          "amount": "string",
+          "mpin": "string",
+          "expiry": "string",
+          "cvc": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "stan": "string",
+          "availableBalance": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "CardToCardRequest / CardToCardResponse",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 23,
+      "name": "LOVS_LINK",
+      "method": "POST",
+      "path": "transactions/v1/getLovs",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/getLovs",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": [
+        "B",
+        "C"
+      ],
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "banks": [
+            {
+              "name": "string",
+              "code": "string"
+            }
+          ],
+          "currencies": [
+            {
+              "name": "string",
+              "code": "string",
+              "id": "integer"
+            }
+          ]
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "List<String> / LinkLovsResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 24,
+      "name": "CARD_BALANCE",
+      "method": "POST",
+      "path": "transactions/v1/cardbalanceinquiry",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/cardbalanceinquiry",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "pan": "string",
+          "dateExpiration": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "availableBalance": "string",
+          "currencyAvailable": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GetCardBalanceRequest / GetCardBalanceResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 25,
+      "name": "DELINK_CARD",
+      "method": "POST",
+      "path": "transactions/cardlinking/v1/delinkcard",
+      "full_url": "http://80.238.228.115:8000/transactions/cardlinking/v1/delinkcard",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "cardId": "integer"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "DelinkCardRequest / DelinkCardResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 26,
+      "name": "LINK_CARD",
+      "method": "POST",
+      "path": "transactions/cardlinking/v1/linkcard",
+      "full_url": "http://80.238.228.115:8000/transactions/cardlinking/v1/linkcard",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "accountNo": "string",
+          "mpin": "string",
+          "bankId": "string",
+          "currencyId": "string",
+          "cardDisplayName": "string",
+          "cvv": "string",
+          "expiryDate": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "accountDebitCardId": "integer",
+          "pan": "string",
+          "cardTitle": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LinkCardRequest / LinkCardResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 27,
+      "name": "GET_LINKED_CARDS",
+      "method": "POST",
+      "path": "transactions/cardlinking/v1/getlinkedcards",
+      "full_url": "http://80.238.228.115:8000/transactions/cardlinking/v1/getlinkedcards",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": [
+          {
+            "accountDebitCardId": "integer",
+            "pan": "string",
+            "cardTitle": "string"
+          }
+        ]
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GetLinkedCardsRequest / GetLinkedCardsResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 28,
+      "name": "SET_DEFAULT",
+      "method": "POST",
+      "path": "transactions/cardlinking/v1/setdefault",
+      "full_url": "http://80.238.228.115:8000/transactions/cardlinking/v1/setdefault",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "cardId": "integer",
+          "isDefault": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "SetDefaultRequest / SetDefaultResponse",
+      "notes": "features/cards/viewmodel/CardsViewModel.kt"
+    },
+    {
+      "id": 29,
+      "name": "GET_SAVED_BILL",
+      "method": "POST",
+      "path": "transactions/v1/getsavedbills",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/getsavedbills",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "tazkira": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GetSavedBillsRequest / GetSavedBillsResponse",
+      "notes": "features/billPayment/viewModel/PayBillViewModel.kt"
+    },
+    {
+      "id": 30,
+      "name": "GET_BILLERS",
+      "method": "GET",
+      "path": "transactions/v1/getbiller",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/getbiller",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / GetBillers",
+      "notes": "features/billPayment/viewModel/PayBillViewModel.kt"
+    },
+    {
+      "id": 31,
+      "name": "SAVE_TEMPLATE",
+      "method": "POST",
+      "path": "transactions/v1/savetemplate",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/savetemplate",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "serviceId": "string",
+          "billRefNo": "string",
+          "nickName": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "SaveTemplateRequest / SaveTemplateResponse",
+      "notes": "features/billPayment/viewModel/PayBillViewModel.kt"
+    },
+    {
+      "id": 32,
+      "name": "INQUIRY_BILL",
+      "method": "POST",
+      "path": "transactions/v1/fetchbill",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/fetchbill",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "pan": "string",
+          "billRefNo": "string",
+          "serviceId": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "billAmount": "string",
+          "dueDate": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "BillInquiryRequest / BillInquiryResponse",
+      "notes": "features/billPayment/viewModel/PayBillViewModel.kt"
+    },
+    {
+      "id": 33,
+      "name": "PAY_BILL",
+      "method": "POST",
+      "path": "transactions/v1/paybill",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/paybill",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "pan": "string",
+          "amount": "string",
+          "mpin": "string",
+          "billerName": "string",
+          "serviceId": "string",
+          "billRefNo": "string",
+          "otpPin": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "stan": "string",
+          "availableBalance": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "PayBillRequest / PayBillResponse",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 34,
+      "name": "CNIC_VERIFICATION",
+      "method": "POST",
+      "path": "Account/v1/cnicVerification",
+      "full_url": "http://80.238.228.115:8000/Account/v1/cnicVerification",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site; mapped in ResponseStatusMapperExt with responsecode/messages",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Defined in EndPoints.kt only; no makeApiRequest call site",
+      "unused_in_app": true
+    },
+    {
+      "id": 35,
+      "name": "VERIFY_CUST_RESET_PASS",
+      "method": "POST",
+      "path": "Account/v1/verifyCustResetPass",
+      "full_url": "http://80.238.228.115:8000/Account/v1/verifyCustResetPass",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Defined in EndPoints.kt only",
+      "unused_in_app": true
+    },
+    {
+      "id": 36,
+      "name": "VERIFY_OTP_RESET",
+      "method": "POST",
+      "path": "Account/v1/verifyOtpResetPass",
+      "full_url": "http://80.238.228.115:8000/Account/v1/verifyOtpResetPass",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Defined in EndPoints.kt only",
+      "unused_in_app": true
+    },
+    {
+      "id": 37,
+      "name": "RESET_LOGIN_PIN",
+      "method": "POST",
+      "path": "Account/v1/resetLoginPin",
+      "full_url": "http://80.238.228.115:8000/Account/v1/resetLoginPin",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Defined in EndPoints.kt only",
+      "unused_in_app": true
+    },
+    {
+      "id": 38,
+      "name": "GET_BARAKAT_ID",
+      "method": "GET",
+      "path": "app/v1/getbarakatpayid/{id}",
+      "full_url": "http://80.238.228.115:8000/app/v1/getbarakatpayid/{id}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (provinceId as path parameter)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String provinceId / GetBarakatIDResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 39,
+      "name": "CUSTOMER_KYC",
+      "method": "POST",
+      "path": "Account/v1/customerKyc",
+      "full_url": "http://80.238.228.115:8000/Account/v1/customerKyc",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Distinct from SET_LOGIN_PIN (app/v1/customerKyc)",
+      "unused_in_app": true
+    },
+    {
+      "id": 40,
+      "name": "LOGIN",
+      "method": "POST",
+      "path": "app/v1/login",
+      "full_url": "http://80.238.228.115:8000/app/v1/login",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "username": "string",
+          "password": "string",
+          "accountTypeCode": "string",
+          "accountRegTypeCode": "string",
+          "fireBaseToken": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "customerId": "integer",
+          "accountNo": "string",
+          "currentBalance": "integer",
+          "token": "string",
+          "autoLoginToken": "string",
+          "twoFAEnabled": "string",
+          "barkatPayId": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LoginRequest / LoginResponse",
+      "notes": "features/login/viewmodel/LoginViewModel.kt"
+    },
+    {
+      "id": 41,
+      "name": "CUSTOMER_LIMIT",
+      "method": "POST",
+      "path": "app/v1/viewlimits",
+      "full_url": "http://80.238.228.115:8000/app/v1/viewlimits",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "TransactionLimitRequest / LimitsResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 42,
+      "name": "GET_DISTRICT",
+      "method": "GET",
+      "path": "app/v1/getAllDistrictByProviceId/{id}",
+      "full_url": "http://80.238.228.115:8000/app/v1/getAllDistrictByProviceId/{id}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (provinceId as path parameter)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String provinceId / GetDistrictResponse",
+      "notes": "features/createaccount/viewmodel/SignUpViewModel.kt"
+    },
+    {
+      "id": 43,
+      "name": "FAQS",
+      "method": "GET",
+      "path": "app/v1/getfaqs",
+      "full_url": "http://80.238.228.115:8000/app/v1/getfaqs",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / FAQsResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 44,
+      "name": "NOTIFICATIONS",
+      "method": "GET",
+      "path": "app/v1/notification/{id}",
+      "full_url": "http://80.238.228.115:8000/app/v1/notification/{id}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (appUserId as path parameter)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String appUserId / NotificationResponse",
+      "notes": "features/notifications/viewModel/NotificationViewModel.kt"
+    },
+    {
+      "id": 45,
+      "name": "TAX",
+      "method": "GET",
+      "path": "app/v1/taxCertificate",
+      "full_url": "http://80.238.228.115:8000/app/v1/taxCertificate",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / TaxResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 46,
+      "name": "TUTORIALS",
+      "method": "GET",
+      "path": "/app/v1/gettutorials",
+      "full_url": "http://80.238.228.115:8000/app/v1/gettutorials",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / TutorialsResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt; path has leading slash"
+    },
+    {
+      "id": 47,
+      "name": "GENERATE_EMAIL_OTP",
+      "method": "POST",
+      "path": "app/v1/updateEmail",
+      "full_url": "http://80.238.228.115:8000/app/v1/updateEmail",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "email": "string",
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "UpdateEmailOTPRequest / UpdateEmailOTPResponse",
+      "notes": "features/hamburgerMenu/views/profile/viewModel/ProfileViewmodel.kt"
+    },
+    {
+      "id": 48,
+      "name": "VERIFY_EMAIL",
+      "method": "POST",
+      "path": "app/v1/verifyUpdateEmail",
+      "full_url": "http://80.238.228.115:8000/app/v1/verifyUpdateEmail",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "otpId": "string",
+          "otpPin": "string",
+          "email": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "VerifyEmailRequest / VerifyEmailResponse",
+      "notes": "features/hamburgerMenu/views/profile/viewModel/ProfileViewmodel.kt"
+    },
+    {
+      "id": 49,
+      "name": "GENERATE_STATEMENT",
+      "method": "POST",
+      "path": "app/v1/emailAccountStatment",
+      "full_url": "http://80.238.228.115:8000/app/v1/emailAccountStatment",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "fromDate": "string",
+          "toDate": "string",
+          "email": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenerateStatementRequest / GenerateStatementResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 50,
+      "name": "GET_COMPLAIN_LOVS",
+      "method": "GET",
+      "path": "app/v1/getIssueTypeLov",
+      "full_url": "http://80.238.228.115:8000/app/v1/getIssueTypeLov",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / GetResponseLovs",
+      "notes": "features/support/viewModel/ComplaintViewModel.kt"
+    },
+    {
+      "id": 51,
+      "name": "SUBMIT_COMPLAIN",
+      "method": "POST",
+      "path": "app/v1/submitComplaint",
+      "full_url": "http://80.238.228.115:8000/app/v1/submitComplaint",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "issueTypeId": "string",
+          "description": "string",
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "SubmitComplainRequest / SubmitComplainResponse",
+      "notes": "features/support/viewModel/ComplaintViewModel.kt"
+    },
+    {
+      "id": 52,
+      "name": "USER_STATS",
+      "method": "GET",
+      "path": "/app/v1/getinvitestats/{string}",
+      "full_url": "http://80.238.228.115:8000/app/v1/getinvitestats/{string}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (appUserId as path parameter)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String appUserId / UserStats",
+      "notes": "features/invite/viewModel/InviteViewModel.kt; path has leading slash"
+    },
+    {
+      "id": 53,
+      "name": "INVITE_CONTACT",
+      "method": "POST",
+      "path": "/app/v1/invitefriendreq",
+      "full_url": "http://80.238.228.115:8000/app/v1/invitefriendreq",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "friendMobile": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "SendInviteRequest / SendInviteResponse",
+      "notes": "features/invite/viewModel/InviteViewModel.kt; path has leading slash"
+    },
+    {
+      "id": 54,
+      "name": "AUTHENTICATOR_QR",
+      "method": "GET",
+      "path": "app/v1/generategoogleqrcode/{string}/{code}",
+      "full_url": "http://80.238.228.115:8000/app/v1/generategoogleqrcode/{string}/{code}",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (accountNo and code as path parameters; passed as accountNo|code string)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "qrCode": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String accountNo|code / AuthenticateQRResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 55,
+      "name": "VALIDATE_QR_AUTHENTICATOR",
+      "method": "POST",
+      "path": "app/v1/validate/googleqrcode",
+      "full_url": "http://80.238.228.115:8000/app/v1/validate/googleqrcode",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "otpPin": "string",
+          "accountNo": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "AuthenticatorOTPRequest / AuthenticatorOTPResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 56,
+      "name": "DECODE_URL",
+      "method": "POST",
+      "path": "app/v1/decodeqr",
+      "full_url": "http://80.238.228.115:8000/app/v1/decodeqr",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "qrData": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "QRDecodeRequest / QRDecodeResponse",
+      "notes": "features/qr/viewmodel/QRViewModel.kt"
+    },
+    {
+      "id": 57,
+      "name": "QR_GENERATE",
+      "method": "POST",
+      "path": "app/v1/generateQr",
+      "full_url": "http://80.238.228.115:8000/app/v1/generateQr",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "amount": "string",
+          "accountNo": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "qrData": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "QRGenerateRequest / QREncodeResponse",
+      "notes": "features/qr/viewmodel/QRViewModel.kt"
+    },
+    {
+      "id": 58,
+      "name": "GET_LOVS",
+      "method": "GET",
+      "path": "app/v1/getAccountUpgradeLovs",
+      "full_url": "http://80.238.228.115:8000/app/v1/getAccountUpgradeLovs",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "empty / GetsLovsResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt"
+    },
+    {
+      "id": 59,
+      "name": "UPGRADE_L2",
+      "method": "POST",
+      "path": "app/v1/upgradeAccount",
+      "full_url": "http://80.238.228.115:8000/app/v1/upgradeAccount",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "upgradeLevel": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "AccountUpgradeL2 / LimitsResponse",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt; same path as UPGRADE_ACCOUNT"
+    },
+    {
+      "id": 60,
+      "name": "GENERATE_OTP",
+      "method": "POST",
+      "path": "app/v1/updateDevice",
+      "full_url": "http://80.238.228.115:8000/app/v1/updateDevice",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "deviceId": "string"
+        }
+      },
+      "response_body": {
+        "StatusCode": "string",
+        "ResponseMessage": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenerateOTPRequest / GenerateOTPResponse",
+      "notes": "features/verifyotp/VerifyOtpViewModel.kt"
+    },
+    {
+      "id": 61,
+      "name": "VERIFY_OTP",
+      "method": "POST",
+      "path": "app/v1/verifyUpdateDevice",
+      "full_url": "http://80.238.228.115:8000/app/v1/verifyUpdateDevice",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "otpId": "string",
+          "otpPin": "string",
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "StatusCode": "string",
+        "Message": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "VerifyOTPRequestModel / VerifyOTPResponse",
+      "notes": "features/verifyotp/VerifyOtpViewModel.kt"
+    },
+    {
+      "id": 62,
+      "name": "LOGOUT",
+      "method": "POST",
+      "path": "v1/logout",
+      "full_url": "http://80.238.228.115:8000/v1/logout",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": "empty success body",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "LogoutRequest / none",
+      "notes": "features/MainViewModel.kt"
+    },
+    {
+      "id": 63,
+      "name": "CONTACT_US",
+      "method": "GET",
+      "path": "app/v1/contactus",
+      "full_url": "http://80.238.228.115:8000/app/v1/contactus",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "whatsappNo": "string",
+          "email": "string",
+          "phone": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String placeholder / ContactUsResponse",
+      "notes": "features/MainViewModel.kt"
+    },
+    {
+      "id": 64,
+      "name": "UPGRADE_ACCOUNT",
+      "method": "POST",
+      "path": "app/v1/upgradeAccount",
+      "full_url": "http://80.238.228.115:8000/app/v1/upgradeAccount",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": "UpgradeAccountGenerateOTP | VerifyOTPUpgradeRequest | UpgradeRequest (multi-step)"
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "UpgradeAccountGenerateOTP / VerifyOTPUpgradeRequest / UpgradeRequest",
+      "notes": "features/hamburgerMenu/viewModel/HamburgerViewModel.kt; duplicate path with UPGRADE_L2"
+    },
+    {
+      "id": 65,
+      "name": "CONTACTS_BARAKAT",
+      "method": "POST",
+      "path": "app/v1/getContactList",
+      "full_url": "http://80.238.228.115:8000/app/v1/getContactList",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "contacts": [
+            {
+              "name": "string",
+              "mobileNumber": "string"
+            }
+          ]
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "BarakatContactRequest / BarakatContactResponse",
+      "notes": "features/invite/viewModel/InviteViewModel.kt"
+    },
+    {
+      "id": 66,
+      "name": "REQUEST_MONEY",
+      "method": "POST",
+      "path": "transactions/v1/requestMoney",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/requestMoney",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "requesteeAccountNo": "string",
+          "mobileNumber": "string",
+          "amount": "string",
+          "mpin": "string",
+          "tazkira": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "RequestMoneyRequest / JsonObject via ReviewViewModel",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 67,
+      "name": "HISTORY_REQUESTS",
+      "method": "POST",
+      "path": "transactions/v1/getRequestMoneyHistory",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/getRequestMoneyHistory",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "mobileNumber": "string",
+          "tazkira": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "array"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenericRequest<PaymentRequest> / PaymentRequestResponse",
+      "notes": "features/requestMoney/viewModel/PaymentRequestViewModel.kt"
+    },
+    {
+      "id": 68,
+      "name": "CHANGE_STATUS_REQUEST",
+      "method": "POST",
+      "path": "transactions/v1/updateRequestStatus",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/updateRequestStatus",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "tazkira": "string",
+          "accountNo": "string",
+          "requestMoneyId": "string",
+          "status": "string",
+          "amount": "string",
+          "mpin": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ChangeStatusRequest / ChangeStatusResponse",
+      "notes": "features/requestMoney/viewModel/PaymentRequestViewModel.kt"
+    },
+    {
+      "id": 69,
+      "name": "REQUEST_INQUIRY_RESPONSE",
+      "method": "POST",
+      "path": "transactions/v1/titleFetchForRequestMoney",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/titleFetchForRequestMoney",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "requesteMobileNo": "string",
+          "mobileNumber": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": {
+          "accountTitle": "string"
+        }
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenericRequest<InquiryRequest> / InquiryResponse",
+      "notes": "features/requestMoney/viewModel/PaymentRequestViewModel.kt"
+    },
+    {
+      "id": 70,
+      "name": "DC_LOVS",
+      "method": "GET",
+      "path": "app/v1/cardLov",
+      "full_url": "http://80.238.228.115:8000/app/v1/cardLov",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "none (appUserId passed but ignored for plain GET branch)",
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "String appUserId / DCLovs",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 71,
+      "name": "ORDER_DEBIT_CARD",
+      "method": "POST",
+      "path": "app/v1/newCardRequest",
+      "full_url": "http://80.238.228.115:8000/app/v1/newCardRequest",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "accountNo": "string",
+          "cardType": "string",
+          "deliveryAddress": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "OrderCard / SuccessResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 72,
+      "name": "CHANGE_PIN_DC",
+      "method": "POST",
+      "path": "app/v1/changeCardPin",
+      "full_url": "http://80.238.228.115:8000/app/v1/changeCardPin",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "oldPin": "string",
+          "newPin": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenericRequest / SuccessResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 73,
+      "name": "DC_CARD_INQUIRY_STATUS",
+      "method": "POST",
+      "path": "app/v1/cardInquiry",
+      "full_url": "http://80.238.228.115:8000/app/v1/cardInquiry",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "accountNo": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "DCInquiry / DCInquiryResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 74,
+      "name": "DC_CHANGE_CARD_STATUS",
+      "method": "POST",
+      "path": "app/v1/updateCardStatus",
+      "full_url": "http://80.238.228.115:8000/app/v1/updateCardStatus",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "status": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ChangeCardStatusRequest / SuccessResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 75,
+      "name": "FORGOT_PIN_DC",
+      "method": "POST",
+      "path": "app/v1/forgotCardPin",
+      "full_url": "http://80.238.228.115:8000/app/v1/forgotCardPin",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "accountNo": "string",
+          "mpin": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "ForgotPINRequest / SuccessResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 76,
+      "name": "FETCH_LIMITS_DC",
+      "method": "POST",
+      "path": "app/v1/fetchCardLimits",
+      "full_url": "http://80.238.228.115:8000/app/v1/fetchCardLimits",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "object"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenericRequest<LimitRequest> / LimitResponse",
+      "notes": "features/debitCard/viewmodel/DebitCardViewModel.kt"
+    },
+    {
+      "id": 77,
+      "name": "OTHER_WALLET_TO_WALLET",
+      "method": "POST",
+      "path": "transactions/v1/walletToWallet",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/walletToWallet",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "pan": "string",
+          "accountNo": "string",
+          "amount": "string",
+          "pin": "string",
+          "toBankName": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "GenericRequest<OtherW2WRequest> / JsonObject via ReviewViewModel",
+      "notes": "features/common/viewmodel/ReviewViewModel.kt"
+    },
+    {
+      "id": 78,
+      "name": "CARDS_INITIATE",
+      "method": "POST",
+      "path": "transactions/v1/initiateCardTitleFetch",
+      "full_url": "http://80.238.228.115:8000/transactions/v1/initiateCardTitleFetch",
+      "base_url_name": "DC_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": "unknown — model class not found",
+      "response_body": "unknown — no call site",
+      "source_file": "app/src/main/java/com/wallet/barakatpay/utils/constents/EndPoints.kt",
+      "models": "unused_in_app",
+      "notes": "Duplicate path of INQUIRY_CARD; constant never referenced",
+      "unused_in_app": true
+    },
+    {
+      "id": 79,
+      "name": "LEGACY_LOGIN_AUTHENTICATION",
+      "method": "POST",
+      "path": "Account/LoginAuthentication",
+      "full_url": "http://80.238.228.115:8000/Account/LoginAuthentication",
+      "base_url_name": "BASE_URL",
+      "headers": [
+        "Accept: application/json",
+        "X-Accept-Encoding: ",
+        "X-Accept-Decoding: ",
+        "Authorization: {access_token}",
+        "Access_Token: {access_token_global}",
+        "AppVersion: {encrypted_app_version}",
+        "DeviceName: {device_name}",
+        "DeviceID: {device_imei}",
+        "USER: {user_id}",
+        "NO: {mobile_number}",
+        "imei: {imei}",
+        "AndroidVersion: {android_version}",
+        "AndroidUpdate: {android_version}",
+        "IsAndroid: true",
+        "Language: English",
+        "Client: Android"
+      ],
+      "request_body": {
+        "channel": "string",
+        "segment": "string",
+        "imieNo": "string",
+        "payload": {
+          "username": "string",
+          "password": "string",
+          "accountTypeCode": "string",
+          "accountRegTypeCode": "string",
+          "fireBaseToken": "string"
+        }
+      },
+      "response_body": {
+        "responsecode": "string",
+        "messages": "string",
+        "data": "LoginResponse fields"
+      },
+      "source_file": "app/src/main/java/com/wallet/barakatpay/core/api/ZindigiApiV1Service.kt",
+      "models": "LoginRequest / LoginResponse",
+      "notes": "Legacy ZindigiApiV1Service; APIFactory.ZindigiV1 never called; app uses EndPoints.LOGIN instead",
+      "legacy": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+package com.mfs.pricingprofile.config;
+
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
+
+@Configuration
+public class HttpClientConfig {
+
+    // Sleuth instruments RestTemplate beans built from RestTemplateBuilder, so the
+    // traceId propagates over outgoing REST calls. Timeouts mirror the previous
+    // SimpleClientHttpRequestFactory settings (60s connect/read).
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofMillis(60000))
+                .setReadTimeout(Duration.ofMillis(60000))
+                .build();
+    }
+}

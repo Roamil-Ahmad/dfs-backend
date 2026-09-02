@@ -1,0 +1,54 @@
+package com.dfs.backoffice.repo;
+
+import com.dfs.backoffice.dto.SearchKycRequest;
+import com.dfs.backoffice.model.TblAccountUpgrade;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
+public interface TblAccountUpgradeRepo extends JpaRepository<TblAccountUpgrade, Long> {
+
+    @Query(value = "SELECT U.ACCOUNT_UPGRADE_ID, U.STATUS_ID, U.ACCOUNT_ID, U.ACCOUNT_LEVEL_ID, \n" +
+            "       A.ACCOUNT_NO, A.ACCOUNT_TITLE, L.ACCOUNT_LEVEL_DESCR, S.STATUS_DESCR, SI.SOURCE_OF_INCOME_DESCR, P.PROVINCE_DESCR, O.OCCUPATION_DESCR, AP.ACCOUNT_PURPOSE_DESCR \n" +
+            "  FROM TBL_ACCOUNT_UPGRADE U\n" +
+            " INNER JOIN TBL_ACCOUNT A ON U.ACCOUNT_ID = A.ACCOUNT_ID\n" +
+            " INNER JOIN TBL_ACCOUNT_LEVEL L ON U.ACCOUNT_LEVEL_ID = L.ACCOUNT_LEVEL_ID \n" +
+            " INNER JOIN LKP_STATUS S ON U.STATUS_ID = S.STATUS_ID\n" +
+            "  LEFT JOIN LKP_SOURCE_OF_INCOME SI ON U.SOURCE_OF_FUNDS_ID = SI.SOURCE_OF_INCOME_ID\n" +
+            "  LEFT JOIN LKP_PROVINCE P ON U.PROVINCE_ID = P.PROVINCE_ID\n" +
+            "  LEFT JOIN LKP_OCCUPATION O ON U.OCCUPATION_ID = O.OCCUPATION_ID\n" +
+            "  LEFT JOIN LKP_ACCOUNT_PURPOSE AP ON U.ACCOUNT_PURPOSE_ID = AP.ACCOUNT_PURPOSE_ID\n" +
+            " WHERE U.STATUS_ID = NVL(:#{#searchKycRequest.statusId}, U.STATUS_ID)\n" +
+            "   AND A.ACCOUNT_NO = NVL(:#{#searchKycRequest.mobileNo}, A.ACCOUNT_NO)\n" +
+            "   AND UPPER(DECRYPT_DATA(A.ACCOUNT_TITLE)) LIKE '%'||UPPER(:#{#searchKycRequest.accountTitle})||'%'\n" +
+            "   AND CAST(U.CREATEDATE AS DATE) BETWEEN NVL(TO_DATE(:dateFromInput,'YYYY-MM-DD HH24:MI:SS'), CAST(U.CREATEDATE AS DATE))\n" +
+            "                                      AND NVL(TO_DATE(:dateToInput,'YYYY-MM-DD HH24:MI:SS'), CAST(U.CREATEDATE AS DATE))", nativeQuery = true)
+    List<Object> searchKyc(SearchKycRequest searchKycRequest, String dateFromInput, String dateToInput);
+
+    @Query(value = "SELECT U.ACCOUNT_UPGRADE_ID, U.STATUS_ID, U.ACCOUNT_ID, U.ACCOUNT_LEVEL_ID, A.ACCOUNT_NO, A.ACCOUNT_TITLE, L.ACCOUNT_LEVEL_DESCR, S.STATUS_DESCR, SI.SOURCE_OF_INCOME_DESCR, \n" +
+            "       P.PROVINCE_DESCR, O.OCCUPATION_DESCR, AP.ACCOUNT_PURPOSE_DESCR, CASE WHEN TF.DOCUMENT_PATH IS NULL THEN NULL ELSE 'backoffice/' || TF.DOCUMENT_PATH END NID_FRONT, CASE WHEN TB.DOCUMENT_PATH IS NULL THEN NULL ELSE 'backoffice/' || TB.DOCUMENT_PATH END NID_BACK, CASE WHEN SL.DOCUMENT_PATH IS NULL THEN NULL ELSE 'backoffice/' || SL.DOCUMENT_PATH END SELFIE, \n" +
+            "       CASE WHEN FP.DOCUMENT_PATH IS NULL THEN NULL ELSE 'backoffice/' || FP.DOCUMENT_PATH END FINGERPRINT, CASE WHEN PA.DOCUMENT_PATH IS NULL THEN NULL ELSE 'backoffice/' || PA.DOCUMENT_PATH END PROOF_OF_ADDRESS, U.COMMENTS, U.CREATEDATE UPGRADE_REQUEST_DATE, C.CHECKER_NAME, C.CHECKER_COMMENTS, C.CHECK_DATE\n" +
+            "  FROM TBL_ACCOUNT_UPGRADE U\n" +
+            " INNER JOIN TBL_ACCOUNT A ON U.ACCOUNT_ID = A.ACCOUNT_ID\n" +
+            " INNER JOIN TBL_ACCOUNT_LEVEL L ON U.ACCOUNT_LEVEL_ID = L.ACCOUNT_LEVEL_ID \n" +
+            " INNER JOIN LKP_STATUS S ON U.STATUS_ID = S.STATUS_ID\n" +
+            "  LEFT JOIN TBL_DOCUMENT TF ON U.NID_FRONT_ID = TF.DOCUMENT_ID\n" +
+            "  LEFT JOIN TBL_DOCUMENT TB ON U.NID_BACK_ID = TB.DOCUMENT_ID\n" +
+            "  LEFT JOIN TBL_DOCUMENT SL ON U.SELFIE_ID = SL.DOCUMENT_ID\n" +
+            "  LEFT JOIN TBL_DOCUMENT FP ON U.FINGERPRINT_ID = FP.DOCUMENT_ID\n" +
+            "  LEFT JOIN TBL_DOCUMENT PA ON U.PROOF_OF_ADDRESS_ID = PA.DOCUMENT_ID\n" +
+            "  LEFT JOIN LKP_SOURCE_OF_INCOME SI ON U.SOURCE_OF_FUNDS_ID = SI.SOURCE_OF_INCOME_ID\n" +
+            "  LEFT JOIN LKP_PROVINCE P ON U.PROVINCE_ID = P.PROVINCE_ID\n" +
+            "  LEFT JOIN LKP_OCCUPATION O ON U.OCCUPATION_ID = O.OCCUPATION_ID\n" +
+            "  LEFT JOIN LKP_ACCOUNT_PURPOSE AP ON U.ACCOUNT_PURPOSE_ID = AP.ACCOUNT_PURPOSE_ID\n" +
+            "  LEFT JOIN (SELECT R.REF_TABLE_ID, A.CHECKER_ID, U.EMPLOYEE_NAME CHECKER_NAME, A.CHECK_DATE, A.CHECKER_COMMENTS\n" +
+            "               FROM TBL_MC_REQUEST R\n" +
+            "               LEFT JOIN TBL_MC_REQUEST_ACTION A ON R.MC_REQUEST_ID = A.MC_REQUEST_ID\n" +
+            "               LEFT JOIN TBL_USER U ON A.CHECKER_ID = U.USER_ID\n" +
+            "              WHERE R.TABLE_NAME = 'TBL_ACCOUNT_UPGRADE'\n" +
+            "              ORDER BY A.MC_REQUEST_ACTION_ID DESC \n" +
+            "              FETCH FIRST 1 ROW ONLY) C ON U.ACCOUNT_UPGRADE_ID = C.REF_TABLE_ID\n" +
+            " WHERE U.ACCOUNT_UPGRADE_ID = :id", nativeQuery = true)
+    List<Object> searchKycById(String id);
+}

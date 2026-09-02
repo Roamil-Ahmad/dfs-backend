@@ -1,0 +1,123 @@
+package com.dfs.backoffice.model;
+
+import java.io.Serializable;
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+
+/**
+ * The persistent class for the TBL_TRANS_CHARGES_DOCS database table.
+ * 
+ */
+@Entity
+@Table(name="TBL_TRANS_CHARGES_DOCS")
+@NamedQuery(name="TblTransChargesDoc.findAll", query="SELECT t FROM TblTransChargesDoc t")
+public class TblTransChargesDoc implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@SequenceGenerator(name="TBL_TRANS_CHARGES_DOCS_TRANSCHARGESDOCSID_GENERATOR", sequenceName="TBL_TRANS_CHARGES_DOCS_SEQ",allocationSize = 1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="TBL_TRANS_CHARGES_DOCS_TRANSCHARGESDOCSID_GENERATOR")
+	@Column(name="TRANS_CHARGES_DOCS_ID")
+	private long transChargesDocsId;
+
+	private Timestamp createdate;
+
+	private BigDecimal createuser;
+
+	@Column(name="IS_ACTIVE")
+	private String isActive;
+
+	private Timestamp lastupdatedate;
+
+	private BigDecimal lastupdateuser;
+
+	private BigDecimal updateindex;
+
+	//bi-directional many-to-one association to TblTransCharge
+	@ManyToOne
+	@JoinColumn(name="TRANS_CHARGES_ID")
+	private TblTransCharge tblTransCharge;
+
+	//bi-directional many-to-one association to TblTransDoc
+	@ManyToOne
+	@JoinColumn(name="TRANS_DOCS_ID")
+	private TblTransDoc tblTransDoc;
+
+	public TblTransChargesDoc() {
+	}
+
+	public long getTransChargesDocsId() {
+		return this.transChargesDocsId;
+	}
+
+	public void setTransChargesDocsId(long transChargesDocsId) {
+		this.transChargesDocsId = transChargesDocsId;
+	}
+
+	public Timestamp getCreatedate() {
+		return this.createdate;
+	}
+
+	public void setCreatedate(Timestamp createdate) {
+		this.createdate = createdate;
+	}
+
+	public BigDecimal getCreateuser() {
+		return this.createuser;
+	}
+
+	public void setCreateuser(BigDecimal createuser) {
+		this.createuser = createuser;
+	}
+
+	public String getIsActive() {
+		return this.isActive;
+	}
+
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+
+	public Timestamp getLastupdatedate() {
+		return this.lastupdatedate;
+	}
+
+	public void setLastupdatedate(Timestamp lastupdatedate) {
+		this.lastupdatedate = lastupdatedate;
+	}
+
+	public BigDecimal getLastupdateuser() {
+		return this.lastupdateuser;
+	}
+
+	public void setLastupdateuser(BigDecimal lastupdateuser) {
+		this.lastupdateuser = lastupdateuser;
+	}
+
+	public BigDecimal getUpdateindex() {
+		return this.updateindex;
+	}
+
+	public void setUpdateindex(BigDecimal updateindex) {
+		this.updateindex = updateindex;
+	}
+
+	public TblTransCharge getTblTransCharge() {
+		return this.tblTransCharge;
+	}
+
+	public void setTblTransCharge(TblTransCharge tblTransCharge) {
+		this.tblTransCharge = tblTransCharge;
+	}
+
+	public TblTransDoc getTblTransDoc() {
+		return this.tblTransDoc;
+	}
+
+	public void setTblTransDoc(TblTransDoc tblTransDoc) {
+		this.tblTransDoc = tblTransDoc;
+	}
+
+}

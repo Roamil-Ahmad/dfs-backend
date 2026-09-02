@@ -1,0 +1,219 @@
+# =============================================================================
+#  DFS Pakistan - 13 Spring Boot services
+# =============================================================================
+#    Validate :  docker compose config
+#    Build    :  docker compose build
+#    Run      :  docker compose up -d
+#
+#  Oracle is EXTERNAL to this project - there is no database container.
+#  Set DB_URL / DB_USERNAME / DB_PASSWORD in .env before starting.
+#
+#  Host ports default to the 18000-18016 block and are overridable per service
+#  via *_HOST_PORT in .env.  Secrets come from .env (git-ignored); copy
+#  .env.example to .env and fill it in, or the affected services will not start.
+#
+#  See README.md for the full service inventory and configuration reference.
+# =============================================================================
+
+name: dfs
+
+x-common: &common
+  restart: unless-stopped
+  networks: [dfs-net]
+  env_file: [.env]
+  # Hard container memory cap. Two reasons this matters on this host:
+  #  1. It makes the JVM container-aware — without a limit each Spring Boot
+  #     process sizes its heap to 1/4 of HOST RAM (~3.9 GB on a 15.6 GB box).
+  #  2. If a service overruns, Docker kills only that container instead of the
+  #     kernel OOM killer choosing a victim (the 4 GiB Oracle container is the
+  #     biggest target on this server).
+  # Sizing matches the project's own GitHub Actions workflows.
+  mem_limit: 640m
+  memswap_limit: 640m
+  environment: &common-env
+    JAVA_TOOL_OPTIONS: "-Xms128m -Xmx448m -XX:+UseG1GC"
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+# Shared host directories, mounted into every service that needs them.
+#
+# Uploaded KYC documents: app and agentapp write them, backoffice serves them to the portal, so
+# all three must see the same directory. Without a mount each container keeps its own copy in its
+# writable layer - invisible to the others, and destroyed by the next --force-recreate. That is
+# how the documents uploaded on 20 Aug were lost.
+#
+# Jasper report definitions are mounted read-only for the same reason: without it every redeploy
+# wiped them and the portal answered "Report Folder Does Not Exist".
+
+services:
+
+  agentapp:
+    <<: *common
+    volumes:
+      - ./documents:/opt/tomcat/webapps/document
+    build:
+      context: ./AgentApp
+    image: dfs/agentapp:latest
+    container_name: dfs-agentapp
+    ports:
+      - "${AGENTAPP_HOST_PORT:-18001}:8001"
+    environment:
+      <<: *common-env
+      THIRDPARTIES_BASE_URL: http://thirdparties:8008
+      NADRA_BASE_URL: http://nadra:9994
+      WORKFLOW_BASE_URL: http://workflow:8010
+
+  app:
+    <<: *common
+    volumes:
+      - ./documents:/opt/tomcat/webapps/document
+      - ./jasperReport:/opt/tomcat/jasperReport:ro
+    build:
+      context: ./App
+    image: dfs/app:latest
+    container_name: dfs-app
+    ports:
+      - "${APP_HOST_PORT:-18002}:8002"
+    environment:
+      <<: *common-env
+      THIRDPARTIES_BASE_URL: http://thirdparties:8008
+      CARD_BASE_URL: http://cardwrapper:8005
+      NADRA_BASE_URL: http://nadra:9994
+
+  backoffice:
+    <<: *common
+    volumes:
+      - ./documents:/opt/tomcat/webapps/document
+      - ./jasperReport:/opt/tomcat/jasperReport:ro
+    build:
+      context: ./backoffice
+    image: dfs/backoffice:latest
+    container_name: dfs-backoffice
+    ports:
+      - "${BACKOFFICE_HOST_PORT:-18003}:8003"
+    environment:
+      <<: *common-env
+      WORKFLOW_BASE_URL: http://workflow:8010
+      CARD_BASE_URL: http://cardwrapper:8005
+
+  cardwrapper:
+    <<: *common
+    build:
+      context: ./CardManagement
+    image: dfs/cardwrapper:latest
+    container_name: dfs-cardwrapper
+    ports:
+      - "${CARDWRAPPER_HOST_PORT:-18005}:8005"
+
+  fee:
+    <<: *common
+    build:
+      context: ./pricingandcommission
+    image: dfs/fee:latest
+    container_name: dfs-fee
+    ports:
+      - "${FEE_HOST_PORT:-18007}:8007"
+
+  thirdparties:
+    <<: *common
+    build:
+      context: ./ThirdParties
+    image: dfs/thirdparties:latest
+    container_name: dfs-thirdparties
+    ports:
+      - "${THIRDPARTIES_HOST_PORT:-18008}:8008"
+
+  transactions:
+    <<: *common
+    build:
+      context: ./Transactions
+    image: dfs/transactions:latest
+    container_name: dfs-transactions
+    ports:
+      - "${TRANSACTIONS_HOST_PORT:-18009}:8009"
+    environment:
+      <<: *common-env
+      THIRDPARTIES_BASE_URL: http://thirdparties:8008
+      PUSHNOTIFICATION_BASE_URL: http://pushnotification:8012
+      APP_BASE_URL: http://app:8002
+
+  workflow:
+    <<: *common
+    build:
+      context: ./Workflow
+    image: dfs/workflow:latest
+    container_name: dfs-workflow
+    ports:
+      - "${WORKFLOW_HOST_PORT:-18010}:8010"
+
+  pushnotification:
+    <<: *common
+    build:
+      context: ./pushnotification
+    image: dfs/pushnotification:latest
+    container_name: dfs-pushnotification
+    ports:
+      - "${PUSHNOTIFICATION_HOST_PORT:-18012}:8012"
+
+  # Encrypting reverse proxy: decrypts client envelopes, forwards plaintext to the
+  # downstream service on dfs-net, re-encrypts the response.
+  gateway:
+    <<: *common
+    build:
+      context: ./apigatway-encryption
+    image: dfs/gateway:latest
+    container_name: dfs-gateway
+    ports:
+      - "${GATEWAY_HOST_PORT:-18013}:8080"
+    environment:
+      <<: *common-env
+      DFS_APP_BASE_URL: http://app:8002
+      DFS_DC_BASE_URL: http://transactions:8009
+
+  # CNIC verification. app and agentapp call it from mobileRegistration before the
+  # registration OTP is issued, so it must be up for that flow to work.
+  # Mock verification reads TBL_NID_MOCK and returns "Nadra Verification Failed" for
+  # any CNIC not present there (see NADRA_SERVICE_MIGRATION_REPORT.md).
+  nadra:
+    <<: *common
+    build:
+      context: ./nadra
+    image: dfs/nadra:latest
+    container_name: dfs-nadra
+    ports:
+      - "${NADRA_HOST_PORT:-18014}:9994"
+
+  # 1LINK switching. Kept out of the default profile historically; included here so the
+  # repository builds the complete backend. Port 9995 because nadra already owns 9994.
+  switch-gateway:
+    <<: *common
+    build:
+      context: ./switch-gateway
+    image: dfs/switch-gateway:latest
+    container_name: dfs-switch-gateway
+    ports:
+      - "${SWITCH_GATEWAY_HOST_PORT:-18015}:9995"
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9995
+
+  # Test double for the 1LINK host. Useful for local end-to-end runs without the real switch.
+  switch-simulator:
+    <<: *common
+    build:
+      context: ./switch-simulator
+    image: dfs/switch-simulator:latest
+    container_name: dfs-switch-simulator
+    ports:
+      - "${SWITCH_SIMULATOR_HOST_PORT:-18016}:9993"
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9993
+
+networks:
+  dfs-net:
+    name: dfs-net
+    driver: bridge

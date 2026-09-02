@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------
+#  Secrets — never commit
+# ---------------------------------------------------------------------------
+.env
+application-local.properties
+**/application-local.properties
+
+# Firebase service-account private key. The real file is supplied at deploy
+# time; a placeholder template sits beside it as *.json.example.
+**/src/main/resources/*firebase-adminsdk*.json
+
+# Keys, certificates and keystores
+*.p12
+*.jks
+*.pem
+*.key
+!**/src/main/resources/*.json.example
+
+# ---------------------------------------------------------------------------
+#  Build output
+# ---------------------------------------------------------------------------
+target/
+build/
+*.class
+*.war
+*.jar
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# ---------------------------------------------------------------------------
+#  IDE / editor metadata
+# ---------------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+
+# ---------------------------------------------------------------------------
+#  Logs and runtime scratch
+# ---------------------------------------------------------------------------
+*.log
+logs/
+*.stackdump
+hs_err_pid*
+replay_pid*
+
+# ---------------------------------------------------------------------------
+#  OS noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime upload directory (bind-mounted into the containers)
+documents/
+
+# Prebuilt React admin portal. Deployed separately; the bundle has host URLs
+# compiled into it, so it is not carried in this repository.
+frontendbuild/
