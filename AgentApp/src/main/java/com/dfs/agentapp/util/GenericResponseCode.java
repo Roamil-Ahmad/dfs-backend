@@ -73,7 +73,8 @@ public enum GenericResponseCode {
     RECORD_ALREADY_EXISTS("147", "RECORD ALREADY EXISTS"),
     RECORD_NOT_SAVED("141", "RECORD NOT SAVED"),
     LICENSE_NOT_FOUND("161", "License Not Found"),
-    BUSINESS_TYPE_NOT_FOUND("162", "Business Type Not Found");
+    BUSINESS_TYPE_NOT_FOUND("162", "Business Type Not Found"),
+    PARENT_AGENT_IS_CHILD_AGENT("163", "A child agent cannot be assigned as a parent agent.");
 
     private final String responseCode;
     private final String responseMessage;

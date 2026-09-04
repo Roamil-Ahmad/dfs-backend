@@ -67,6 +67,8 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     private TblAppUserLoginHistoryRepo tblAppUserLoginHistoryRepo;
     @Autowired
     private TblAgentRepo tblAgentRepo;
+    @Autowired
+    private TblAgentCommissionDistributionRepo tblAgentCommissionDistributionRepo;
     @Value("${account.level.one}")
     private String accountLevelOne;
     @Autowired
@@ -286,7 +288,7 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
      *
      * <p>Saves exactly the same rows through the same transactional {@code saveAgentData} call -
      * agent, business, account, app user, QR, customer-all, documents and any partners - and then
-     * returns the new app user directly. The other method would at this point ask the portal
+     * returns the new agent id. The other method would at this point ask the portal
      * whether the record needs approval and, if it does, hand back a transaction id instead of a
      * usable account. This one never does, so the account is live when the call returns.</p>
      */
@@ -298,8 +300,11 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
         // Through self for the same reason as registerAgentAndAccount: @Transactional is applied
         // by a proxy, and an internal this.saveAgentData(...) call would bypass it entirely.
         TblAgent tblAgent = self.saveAgentData(agentKycRequest, apiRequest);
-        TblAppUser tblAppUser = tblAppUserRepo.findByAgentId(tblAgent.getAgentId());
-        return commonService.getResponse(GenericResponseCode.SUCCESS.getResponseCode(), tblAppUser);
+        // The new agent id is the whole of data. The app user this used to return carried the
+        // credential columns with it, and onboarding has no caller that needs them.
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("agentId", tblAgent.getAgentId());
+        return commonService.getResponse(GenericResponseCode.SUCCESS.getResponseCode(), data);
     }
 
     /**
@@ -339,7 +344,9 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
         // Corporate onboarding only. agentkyc passes a plain AgentKycRequest, which has no
         // partners, so its single-app-user behaviour is untouched.
         if (agentKycRequest instanceof CorporateOnboardingRequest) {
-            savePartnerAppUsers(tblAgent, ((CorporateOnboardingRequest) agentKycRequest).getPartners());
+            CorporateOnboardingRequest onboarding = (CorporateOnboardingRequest) agentKycRequest;
+            savePartnerAppUsers(tblAgent, onboarding.getPartners());
+            saveParentCommission(tblAgent, onboarding);
         }
         qrService.generateStaticQrForP2P(tblAccount.getAccountNo(),
                 tblAccount.getTblAccountLevel().getAccountLevelCode());
@@ -427,6 +434,40 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     }
 
     /**
+     * Records what the parent agent earns on this agent, in TBL_AGENT_COMMISSION_DISTRIBUTION.
+     *
+     * <p>Written only for a genuine sub-agent: both a parent agent that resolves to a real row and
+     * a commission to pay it. Either missing and nothing is written - a standalone agent has no
+     * parent to share with, and a child agent without a stated commission is left for the pricing
+     * service to default rather than being given a rate this endpoint invented.</p>
+     *
+     * <p>AGENT_LEVEL is 1 because onboarding creates a single hop, this agent to its parent. The
+     * deeper levels the table can hold describe a chain this endpoint cannot build - a parent that
+     * is itself a sub-agent is rejected before any of this runs.</p>
+     */
+    private void saveParentCommission(TblAgent tblAgent, CorporateOnboardingRequest request) {
+        if (isNullOrEmpty(request.getParentCommission()) || tblAgent.getTblAgent() == null) {
+            return;
+        }
+        BigDecimal commissionPercentage;
+        try {
+            commissionPercentage = new BigDecimal(request.getParentCommission().trim());
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Parent commission must be a number");
+        }
+
+        TblAgentCommissionDistribution distribution = new TblAgentCommissionDistribution();
+        distribution.setTblAgent(tblAgent);
+        distribution.setParentAgentId(BigDecimal.valueOf(tblAgent.getTblAgent().getAgentId()));
+        distribution.setAgentLevel(BigDecimal.ONE);
+        distribution.setCommissionPercentage(commissionPercentage);
+        distribution.setStatus(Constants.YES);
+        distribution.setCreatedate(new Date());
+        distribution.setCreateuser(BigDecimal.ONE);
+        tblAgentCommissionDistributionRepo.saveAndFlush(distribution);
+    }
+
+    /**
      * Everything agentDeviceRegistration, verifyAgentdeviceRegistration and agentkyc did, in one
      * call, minus the OTP.
      *
@@ -446,6 +487,18 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     @Override
     public HashMap<String, Object> onboardCorporateAgent(CorporateOnboardingRequest request, Request apiRequest)
             throws JsonProcessingException {
+
+        // A parent must sit at the top of its own branch. If the id supplied already has a parent of
+        // its own it is a sub-agent, and hanging another agent beneath it would build a third level
+        // the hierarchy does not model. Checked before anything is written, so a rejected request
+        // leaves no half-created agent behind.
+        Long requestedParentAgentId = parseLongOrNull(request.getParentAgentId());
+        if (requestedParentAgentId != null) {
+            TblAgent requestedParent = tblAgentRepo.findById(requestedParentAgentId).orElse(null);
+            if (requestedParent != null && requestedParent.getTblAgent() != null) {
+                return childAgentAsParentResponse();
+            }
+        }
 
         // 1 - device registration. Same call agentDeviceRegistration made.
         MobileRegistrationRequest mobileRegistrationRequest = new MobileRegistrationRequest();
@@ -470,6 +523,23 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
         // here: onboarding is a single call that must leave a usable account behind, not a request
         // parked for approval.
         return registerAgentAndAccountWithoutMakerChecker(request, apiRequest);
+    }
+
+    /**
+     * The rejection for {@link #onboardCorporateAgent} when the requested parent is itself a
+     * sub-agent.
+     *
+     * <p>Built here rather than thrown as a CustomDataNotFoundException because that path resolves
+     * its text from TBL_MESSAGE, and this code has no row there - the caller would receive
+     * "Message Not Found Against Code : 163" instead of the reason. The envelope is the same shape
+     * every other response uses.</p>
+     */
+    private HashMap<String, Object> childAgentAsParentResponse() {
+        HashMap<String, Object> response = new HashMap<>();
+        response.put("responsecode", GenericResponseCode.PARENT_AGENT_IS_CHILD_AGENT.getResponseCode());
+        response.put("messages", GenericResponseCode.PARENT_AGENT_IS_CHILD_AGENT.getResponseMessage());
+        response.put("data", null);
+        return response;
     }
 
     private TblAccount saveTblAccount(TblAgent tblAgent, AgentKycRequest agentKycRequest) {

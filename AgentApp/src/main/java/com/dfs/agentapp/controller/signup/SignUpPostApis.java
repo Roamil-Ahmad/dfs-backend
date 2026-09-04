@@ -195,8 +195,10 @@ public class SignUpPostApis extends HelperClass {
      * <p>Does what agentDeviceRegistration, verifyAgentdeviceRegistration and agentkyc did in
      * sequence, writing the same rows to the same tables, with the OTP generation and
      * verification left out. Being one call there is no earlier token to present, so it
-     * authenticates no header - the same position agentDeviceRegistration was in - and hands back
-     * a session token of its own in {@code data.authToken}.</p>
+     * authenticates no header - the same position agentDeviceRegistration was in.</p>
+     *
+     * <p>On success {@code data} carries the new agent id and nothing else:
+     * {@code {"agentId": 1234}}.</p>
      *
      * <p>Accepts an optional {@code partners} list; each partner becomes an app user of their own
      * against the new agent. The three original endpoints are untouched and still work.</p>

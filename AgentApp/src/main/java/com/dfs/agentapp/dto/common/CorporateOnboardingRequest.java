@@ -40,4 +40,13 @@ public class CorporateOnboardingRequest extends AgentKycRequest {
      * single app user, and any number given produces one app user each.
      */
     private List<Partner> partners;
+
+    /**
+     * Commission percentage the parent agent earns on this agent, written to
+     * TBL_AGENT_COMMISSION_DISTRIBUTION.
+     *
+     * <p>Only meaningful alongside {@code parentAgentId} - a standalone agent has no parent to
+     * pay. Left out, no distribution row is written and onboarding behaves exactly as before.</p>
+     */
+    private String parentCommission;
 }
