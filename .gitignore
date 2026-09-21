@@ -61,3 +61,9 @@ documents/
 # Prebuilt React admin portal. Deployed separately; the bundle has host URLs
 # compiled into it, so it is not carried in this repository.
 frontendbuild/
+
+# Postman collections are shared directly, not carried in the repository.
+*.postman_collection.json
+
+# Local backups of .env carry the same secrets as .env itself.
+.env.bak*

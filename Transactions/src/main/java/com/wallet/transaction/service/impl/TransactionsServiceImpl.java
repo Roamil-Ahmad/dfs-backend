@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TransactionsServiceImpl extends HelperClass implements TransactionsService {
@@ -125,6 +126,10 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
 
     @Value("${agent.mpin.verification.url}")
     private String agentMpinVerificationUrl;
+    @Value("${corporate.portal.apiKey}")
+    private String corporatePortalApiKey;
+    @Value("${corporate.mpin.verification.url}")
+    private String corporateMpinVerificationUrl;
     @Autowired
     private TblGlobalConfigRepo tblGlobalConfigRepo;
 
@@ -293,6 +298,20 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
     @Override
     public HashMap<String, Object> fundsTransferLocal(FundTransferRequest fundTransferRequest, Request request,
                                                       String token) throws Exception {
+        return fundsTransferLocal(fundTransferRequest, request, token, false);
+    }
+
+    /**
+     * The same transfer, told whether the caller is the Corporate Portal.
+     *
+     * <p>Only the MPIN check differs. A mobile caller presents an app login token that is
+     * forwarded to app or agentapp; the portal has no such token, so it verifies the customer
+     * MPIN against app's portal-key endpoint. Everything else - limits, fees, the wallet call
+     * and every row written - is the one implementation, shared.</p>
+     */
+    
+    public HashMap<String, Object> fundsTransferLocal(FundTransferRequest fundTransferRequest, Request request,
+                                                      String token, boolean portalCall) throws Exception {
         TblAccount tblAccount = tblAccountRepo.findByAccountNo(fundTransferRequest.getMobileNumber());
         FundTransferResponce fundTransferResponce = new FundTransferResponce();
         if (tblAccount != null) {
@@ -328,11 +347,20 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
                 // AgentApp holds an agent's, and each only knows its own - so an agent verified
                 // against the customer endpoint is rejected however correct the PIN is. MOB and
                 // every other channel keep the customer endpoint they already used.
-                String reultMpin = agentChannelCode.equalsIgnoreCase(request.getChannel())
-                        ? this.checkAgentMpinValidation(tblAccount.getAccountNo(), fundTransferRequest.getMpin(),
-                                token, request.getImieNo(), agentMpinVerificationUrl)
-                        : checkMpinValidation(tblAccount.getAccountNo(), fundTransferRequest.getMpin(), token,
-                                request.getImieNo());
+                // A portal call carries no app login token, so it verifies the CUSTOMER MPIN
+                // against app's portal-key endpoint instead. Same check, same service method -
+                // only the credential presented to app differs.
+                String reultMpin;
+                if (portalCall) {
+                    reultMpin = checkCustomerMpinForPortal(tblAccount.getAccountNo(),
+                            fundTransferRequest.getMpin(), request.getImieNo());
+                } else {
+                    reultMpin = agentChannelCode.equalsIgnoreCase(request.getChannel())
+                            ? this.checkAgentMpinValidation(tblAccount.getAccountNo(), fundTransferRequest.getMpin(),
+                                    token, request.getImieNo(), agentMpinVerificationUrl)
+                            : checkMpinValidation(tblAccount.getAccountNo(), fundTransferRequest.getMpin(), token,
+                                    request.getImieNo());
+                }
                 JSONObject jsonObject1 = new JSONObject(reultMpin);
                 if (!jsonObject1.getString("responsecode").equalsIgnoreCase("000")) {
                     tblResponse.setAdditionalData("Invalid Mpin");
@@ -2437,6 +2465,27 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
         tblRequest.setEndPoint("cardTransferFundRequest");
         tblRequest.setCreateuser(new BigDecimal(1));
         return tblRequest;
+    }
+
+    /**
+     * Verifies a CUSTOMER MPIN for a Corporate Portal call.
+     *
+     * <p>Posts the same payload {@link #checkMpinValidation} posts, to app's portal-key twin of
+     * the same endpoint, presenting the shared portal key instead of a bearer token. The MPIN is
+     * still required and still compared by app; only the caller's own credential changes.</p>
+     */
+    private String checkCustomerMpinForPortal(String mobNo, String mPin, String imei) throws Exception {
+        MpinRequest mpinRequest = new MpinRequest();
+        MpinPayload payload = new MpinPayload();
+        payload.setMobileNumber(mobNo);
+        payload.setMpin(mPin);
+        mpinRequest.setImieNo(imei);
+        mpinRequest.setPayload(payload);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("content-type", "application/json");
+        headers.put("accept", "application/json");
+        headers.put("X-Portal-Key", corporatePortalApiKey);
+        return getResponseFromPostAPILms(headers, mpinRequest, corporateMpinVerificationUrl);
     }
 
     @Override

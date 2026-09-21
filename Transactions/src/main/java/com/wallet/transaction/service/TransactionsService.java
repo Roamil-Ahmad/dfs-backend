@@ -28,6 +28,9 @@ public interface TransactionsService {
 
     HashMap<String, Object> fundsTransferLocal(FundTransferRequest fundTransferRequest, Request request,String token) throws Exception;
 
+    /** Same transfer, with a flag saying the caller is the Corporate Portal (no app login token). */
+    HashMap<String, Object> fundsTransferLocal(FundTransferRequest fundTransferRequest, Request request, String token, boolean portalCall) throws Exception;
+
     HashMap<String, Object> titleFetchForRequestMoney(TitleFetchRequetMoneyRequest requetMoneyRequest, Request request);
 
     HashMap<String, Object> requestMoney(RequestMoneyRequest requetMoneyRequest, Request request,String token) throws Exception;
