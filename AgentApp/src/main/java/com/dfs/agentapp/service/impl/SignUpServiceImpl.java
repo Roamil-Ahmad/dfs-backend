@@ -651,15 +651,11 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
                 TblAgent parentAgent = tblAgentRepo.findById(parentAgentId).orElse(null);
                 if (parentAgent != null) {
                     tblAgent.setTblAgent(parentAgent);
+                    tblAgent.setAgentType(Constants.AGENT_TYPE_STANDALONE);
                 }
+            }else {
+                tblAgent.setAgentType(Constants.AGENT_TYPE_WITH_PARENT);
             }
-
-            // AGENT_TYPE comes straight from the request field, with no lookup: a parent agent id
-            // supplied gives P, none gives C. Whether that id resolves to a real agent is a
-            // separate concern, handled where PARENT_AGENT_ID is linked below.
-            tblAgent.setAgentType(isNullOrEmpty(agentKycRequest.getParentAgentId())
-                    ? Constants.AGENT_TYPE_STANDALONE
-                    : Constants.AGENT_TYPE_WITH_PARENT);
 
             tblAgent = tblAgentRepo.saveAndFlush(tblAgent);
             saveTblAgentBusiness(tblAgent, agentKycRequest);
