@@ -238,6 +238,74 @@ Amount must parse as a number and be greater than zero.
 
 ---
 
+## Corporate onboarding
+
+`POST /agentapp/v1/corporateonboarding` creates a corporate agent in one call — device
+registration, verification and KYC together, with the OTP left out.
+
+It is the one endpoint here that takes **no `X-Portal-Key` and no bearer token**. It authenticates
+no header at all, which is the same position `agentDeviceRegistration` was always in.
+
+### `segment` is mandatory, and it lives on the envelope
+
+```jsonc
+{
+  "channel": "AGNT",
+  "segment": "Corporate Clients",   // <- required, ENVELOPE level, not inside payload
+  "imieNo": "12ad5b4525363f4f",
+  "payload": { /* KYC fields */ }
+}
+```
+
+Omit it, or send only spaces, and the call is refused before anything is written:
+
+```json
+{ "responsecode": "111", "data": null, "messages": "Segment Required" }
+```
+
+What happens to the value:
+
+- It is matched against `LKP_SEGMENT.SEGMENT_DESCR`, **ignoring case and surrounding spaces** —
+  `"segment1"`, `"SEGMENT1"` and `"  Segment1 "` all resolve to the same existing row.
+- A match is reused and tagged onto the new agent.
+- No match creates the segment, with a four-character code derived from the name
+  (`"Corporate Clients"` → `CORP`), then tags it on.
+
+Send the same name consistently. Every distinct spelling that is not merely a case or spacing
+difference creates a **new** segment, so `"Corporate"` and `"Corporates"` become two.
+
+> The tag is written to `TBL_AGENT.SEGMENT_ID`. `TBL_ACCOUNT` has no segment column — the agent is
+> what the new account hangs off, so that is where the segment lives.
+
+### Optional hierarchy fields
+
+| Field | Effect |
+| --- | --- |
+| `parentAgentId` | Makes the new agent a sub-agent. `AGENT_TYPE` becomes `C`; a standalone agent gets `P`. |
+| `parentCommission` | Percentage the parent earns, written to `TBL_AGENT_COMMISSION_DISTRIBUTION` at level 1. Needs `parentAgentId` to mean anything. |
+| `partners` | A list of `{email, password}`. Each becomes an app user of its own against the same agent. |
+
+A `parentAgentId` naming an agent that is **itself** a sub-agent is refused, and nothing is written:
+
+```json
+{ "responsecode": "163", "messages": "A child agent cannot be assigned as a parent agent." }
+```
+
+### Response
+
+```json
+{ "responsecode": "000", "messages": "SUCCESS", "data": { "agentId": 1234 } }
+```
+
+`data` carries the new agent id and nothing else. Keep it — it is how you refer to the agent
+afterwards, including as a `parentAgentId` for its own sub-agents.
+
+Lookup ids in the payload (`businessTypeId`, `cityId`, `occupationId`, `expectedMonthlyVolumeId`,
+`accountPurposeId`) come from `GET /agentapp/v1/getAllLovs`. An unknown `businessTypeId` is
+rejected outright with `Business Type Not Found`.
+
+---
+
 ## Error handling
 
 | `responsecode` | Meaning | What to do |
