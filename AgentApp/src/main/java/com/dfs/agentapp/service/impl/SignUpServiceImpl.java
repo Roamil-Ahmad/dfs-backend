@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.security.SecureRandom;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,6 +70,8 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     private TblAgentRepo tblAgentRepo;
     @Autowired
     private TblAgentCommissionDistributionRepo tblAgentCommissionDistributionRepo;
+    @Autowired
+    private LkpSegmentRepo lkpSegmentRepo;
     @Value("${account.level.one}")
     private String accountLevelOne;
     @Autowired
@@ -334,6 +337,13 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
         }
 
         TblAgent tblAgent = saveTblAgent(agentKycRequest, tblCustomerAll);
+        // Corporate onboarding tags the agent with its segment. TBL_ACCOUNT has no SEGMENT_ID;
+        // SEGMENT_ID lives on TBL_AGENT, which is what the new account hangs off, so that is where
+        // the tag belongs. agentkyc passes a plain AgentKycRequest and is untouched.
+        if (agentKycRequest instanceof CorporateOnboardingRequest) {
+            tblAgent.setLkpSegment(resolveSegment(apiRequest.getSegment()));
+            tblAgent = tblAgentRepo.saveAndFlush(tblAgent);
+        }
         List<TblOfac> tblOfacs = tblOfacRepo.findByName(agentKycRequest.getFullName());
         if (tblOfacs != null && !tblOfacs.isEmpty()) {
             throw new CustomDataNotFoundException(GenericResponseCode.BLACKLISTED.getResponseCode());
@@ -434,6 +444,64 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     }
 
     /**
+     * Finds the segment the request names, creating it when it does not exist yet.
+     *
+     * <p>Matched on SEGMENT_DESCR ignoring case and surrounding spaces, so "Corporate" and
+     * "  corporate " resolve to the same row instead of producing a second one. SEGMENT_DESCR has
+     * no unique index and the schema is not ours to change, so this is the strongest duplicate
+     * prevention available: two callers submitting the same new name at the same instant can still
+     * both insert, after which every later call settles on the lower id.</p>
+     */
+    private LkpSegment resolveSegment(String segmentName) {
+        String name = segmentName.trim();
+        LkpSegment existing = lkpSegmentRepo.findBySegmentDescrIgnoreCase(name);
+        if (existing != null) {
+            return existing;
+        }
+        lkpSegmentRepo.insertSegment(generateUniqueSegmentCode(name), name);
+        LkpSegment created = lkpSegmentRepo.findBySegmentDescrIgnoreCase(name);
+        if (created == null) {
+            throw new CustomDataNotFoundException(GenericResponseCode.TECHNICAL_ISSUE.getResponseCode());
+        }
+        return created;
+    }
+
+    /**
+     * A four-character SEGMENT_CODE that no existing segment already uses.
+     *
+     * <p>Built from the name so the code stays recognisable - "Corporate Clients" gives CORP -
+     * padded when the name is shorter than four usable characters. SEGMENT_CODE carries a unique
+     * index, so a collision is a real constraint violation rather than a cosmetic clash: the last
+     * character is varied first, and only then does it fall back to random codes.</p>
+     */
+    private String generateUniqueSegmentCode(String segmentName) {
+        String alphanumeric = segmentName.toUpperCase().replaceAll("[^A-Z0-9]", "");
+        String base = ((alphanumeric.isEmpty() ? "SEG" : alphanumeric) + "XXXX").substring(0, 4);
+        if (!lkpSegmentRepo.existsBySegmentCode(base)) {
+            return base;
+        }
+        String stem = base.substring(0, 3);
+        for (char suffix : "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray()) {
+            String candidate = stem + suffix;
+            if (!lkpSegmentRepo.existsBySegmentCode(candidate)) {
+                return candidate;
+            }
+        }
+        SecureRandom random = new SecureRandom();
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (int attempt = 0; attempt < 200; attempt++) {
+            StringBuilder candidate = new StringBuilder(4);
+            for (int i = 0; i < 4; i++) {
+                candidate.append(alphabet.charAt(random.nextInt(alphabet.length())));
+            }
+            if (!lkpSegmentRepo.existsBySegmentCode(candidate.toString())) {
+                return candidate.toString();
+            }
+        }
+        throw new CustomDataNotFoundException(GenericResponseCode.TECHNICAL_ISSUE.getResponseCode());
+    }
+
+    /**
      * Records what the parent agent earns on this agent, in TBL_AGENT_COMMISSION_DISTRIBUTION.
      *
      * <p>Written only for a genuine sub-agent: both a parent agent that resolves to a real row and
@@ -487,6 +555,16 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     @Override
     public HashMap<String, Object> onboardCorporateAgent(CorporateOnboardingRequest request, Request apiRequest)
             throws JsonProcessingException {
+
+        // The segment names the commercial grouping the new agent belongs to and is mandatory for
+        // corporate onboarding. Checked here, before any row is written, so a request without one
+        // leaves nothing behind.
+        //
+        // Trimmed rather than handed to isNullOrEmpty, which tests isEmpty and so lets a
+        // whitespace-only value through - that would create a segment with a blank description.
+        if (apiRequest.getSegment() == null || apiRequest.getSegment().trim().isEmpty()) {
+            throw new ValidationException("Segment Required");
+        }
 
         // A parent must sit at the top of its own branch. If the id supplied already has a parent of
         // its own it is a sub-agent, and hanging another agent beneath it would build a third level
