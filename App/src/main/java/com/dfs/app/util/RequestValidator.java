@@ -132,6 +132,14 @@ public class RequestValidator {
         }
     }
 
+    /** Corporate account lookup: the mobile number naming the wallet to describe. */
+    public static void validateAccountDetailsRequest(AccountDetailsRequest accountDetailsRequest) {
+        if (accountDetailsRequest == null || isNullOrEmpty(accountDetailsRequest.getMobileNumber())
+                || accountDetailsRequest.getMobileNumber().trim().isEmpty()) {
+            throw new ValidationException("INVALID MOBILE NUMBER");
+        }
+    }
+
     public static void validateMpinVerificationRequest(MpinVerificationRequest mpinVerificationRequest, Request request) {
         if (isNullOrEmpty(mpinVerificationRequest.getMobileNumber())) {
             throw new ValidationException("INVALID USERNAME");

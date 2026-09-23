@@ -129,6 +129,18 @@ public class TblCustomer implements Serializable {
 	@JoinColumn(name="CITY_ID")
 	private LkpCity lkpCity;
 
+	/**
+	 * The customer's segment, for reading only.
+	 *
+	 * <p>insertable and updatable are false deliberately: SEGMENT_ID is NOT NULL in the database and
+	 * nothing in this service sets it, so letting Hibernate write the column would make it insert a
+	 * null and fail every customer that is created here. The column was previously unmapped, which
+	 * had the same effect of leaving it to the database - this keeps that, and adds the read.</p>
+	 */
+	@ManyToOne
+	@JoinColumn(name="SEGMENT_ID", insertable = false, updatable = false)
+	private LkpSegment lkpSegment;
+
 	//bi-directional many-to-one association to LkpDistrict
 	@ManyToOne
 	@JoinColumn(name="DISTRICT_ID")
@@ -480,6 +492,14 @@ public class TblCustomer implements Serializable {
 
 	public void setLkpAccountPurpose(LkpAccountPurpose lkpAccountPurpose) {
 		this.lkpAccountPurpose = lkpAccountPurpose;
+	}
+
+	public LkpSegment getLkpSegment() {
+		return this.lkpSegment;
+	}
+
+	public void setLkpSegment(LkpSegment lkpSegment) {
+		this.lkpSegment = lkpSegment;
 	}
 
 	public LkpCity getLkpCity() {

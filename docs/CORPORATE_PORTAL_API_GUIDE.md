@@ -124,6 +124,7 @@ a broken endpoint.
 | --- | --- | --- |
 | POST | `/v1/corporate/mpinVerification` | Verify a customer MPIN |
 | POST | `/v1/corporate/bulkAccounts` | Store one account for bulk processing |
+| POST | `/v1/corporate/accountDetails` | Full details of one wallet |
 
 ```jsonc
 { "mobileNumber": "0300xxxxxxx", "mpin": "1234" }
@@ -236,6 +237,43 @@ The `code` is the `utilityCompanyCode` below — **not** `billerCode`.
 
 **3 · `billPayment`** — the same three fields plus `fromAccountNid` and `amount`, both required.
 Amount must parse as a number and be greater than zero.
+
+---
+
+## Account details
+
+`POST /app/v1/corporate/accountDetails` returns everything the portal needs to show about one
+wallet, looked up on the mobile number.
+
+```jsonc
+{ "channel": "MOB", "payload": { "mobileNumber": "03006088666" } }
+```
+
+```json
+{ "responsecode": "000", "messages": "SUCCESS",
+  "data": {
+    "accountNo": "03006088666",
+    "mobileNo": "03006088666",
+    "nidNo": "3520212345671",
+    "gender": "M",
+    "segmentDescr": "DEFAULT",
+    "iban": "PK85DFSS0000003006088666",
+    "qrCode": "0002020102110202000424PK85DF…",
+    "accountTitle": "Hannan Ali",
+    "currentBalance": 34905,
+    "accountStatusDescr": "ACTIVE"
+  }}
+```
+
+`nidNo` and `accountTitle` are **decrypted before they leave** — both are held encrypted at rest
+and the portal has no key of its own. Treat the response as sensitive.
+
+`nidNo`, `gender` and `segmentDescr` belong to the customer behind the account. An **agent**
+account has no customer, so those three come back null while the rest of the account still
+populates — the lookup succeeds rather than failing.
+
+An unknown mobile returns `125 Account Not Found`. The lookup is on `ACCOUNT_NO`, which is unique,
+so a mobile resolves to at most one account.
 
 ---
 

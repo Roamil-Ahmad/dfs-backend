@@ -1,11 +1,14 @@
 package com.dfs.app.controller.corporateportal;
 
 import com.dfs.app.controller.HelperClass;
+import com.dfs.app.dto.AccountDetailsRequest;
 import com.dfs.app.dto.BulkAccountRequest;
 import com.dfs.app.dto.MpinVerificationRequest;
 import com.dfs.app.dto.common.Request;
 import com.dfs.app.service.AccountDetailService;
 import com.dfs.app.service.BulkAccountService;
+import com.dfs.app.service.CorporateAccountService;
+import com.dfs.app.service.CorporateAccountService;
 import com.dfs.app.util.AuthenticationException;
 import com.dfs.app.util.GenericResponseCode;
 import com.dfs.app.util.RequestValidator;
@@ -25,7 +28,7 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 
 /**
- * Corporate Portal endpoints served by app: customer MPIN verification and bulk account upload.
+ * Corporate Portal endpoints served by app: customer MPIN verification and bulk account upload, and account lookup.
  *
  * <p>The portal is a server-side web application with no handset and no app login, so it cannot
  * present the bearer token the mobile endpoints authenticate. These endpoints authenticate the
@@ -64,6 +67,8 @@ public class CorporatePortalController extends HelperClass {
     private AccountDetailService accountDetailService;
     @Autowired
     private BulkAccountService bulkAccountService;
+    @Autowired
+    private CorporateAccountService corporateAccountService;
 
     @Value("${corporate.portal.apiKey}")
     private String corporatePortalApiKey;
@@ -103,6 +108,25 @@ public class CorporatePortalController extends HelperClass {
                 fromJson(convertObjecttoJson(request.getPayload()), BulkAccountRequest.class);
         RequestValidator.validateBulkAccountRequest(bulkAccountRequest);
         HashMap<String, Object> response = bulkAccountService.saveBulkAccounts(bulkAccountRequest, request);
+        return getCustomizedResponseFormat(HttpStatus.OK, response);
+    }
+
+    /**
+     * Describes one wallet: who it belongs to, what it holds and what state it is in.
+     *
+     * <p>Looked up on the mobile number, which is the account number and is unique. The identity
+     * number and account title are decrypted before they leave - the portal has no key.</p>
+     */
+    @PostMapping("/v1/corporate/accountDetails")
+    public ResponseEntity<HashMap<String, Object>> accountDetails(@RequestBody Request request,
+                                                                  HttpServletRequest httpServletRequest)
+            throws JsonProcessingException {
+
+        authenticatePortal(httpServletRequest);
+        AccountDetailsRequest accountDetailsRequest =
+                fromJson(convertObjecttoJson(request.getPayload()), AccountDetailsRequest.class);
+        RequestValidator.validateAccountDetailsRequest(accountDetailsRequest);
+        HashMap<String, Object> response = corporateAccountService.accountDetails(accountDetailsRequest, request);
         return getCustomizedResponseFormat(HttpStatus.OK, response);
     }
 
