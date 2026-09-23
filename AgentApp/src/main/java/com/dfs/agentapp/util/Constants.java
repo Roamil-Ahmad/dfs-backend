@@ -9,12 +9,13 @@ public interface Constants {
     public static final String YES = "Y";
 
     /**
-     * TBL_AGENT.AGENT_TYPE. Selected purely by whether the KYC request carried a parent agent id:
-     * one supplied gives P, none gives C. Named after that condition rather than after a meaning
-     * for the letters, which the request does not define.
+     * TBL_AGENT.AGENT_TYPE. C marks an agent that sits under a parent, P one that does not.
+     *
+     * <p>The same letters backoffice writes, so an agent is typed the same whichever service
+     * created it.</p>
      */
-    public static final String AGENT_TYPE_WITH_PARENT = "P";
-    public static final String AGENT_TYPE_STANDALONE = "C";
+    public static final String AGENT_TYPE_CHILD = "C";
+    public static final String AGENT_TYPE_PARENT = "P";
     public static final String BACK_SLASH = "/";
     public static final String PRE_LOGIN ="P" ;
     public static final String AFTER_LOGIN ="A" ;

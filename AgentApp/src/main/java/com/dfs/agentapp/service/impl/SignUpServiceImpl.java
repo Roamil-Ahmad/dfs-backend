@@ -651,10 +651,10 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
                 TblAgent parentAgent = tblAgentRepo.findById(parentAgentId).orElse(null);
                 if (parentAgent != null) {
                     tblAgent.setTblAgent(parentAgent);
-                    tblAgent.setAgentType(Constants.AGENT_TYPE_STANDALONE);
+                    tblAgent.setAgentType(Constants.AGENT_TYPE_CHILD);
                 }
             }else {
-                tblAgent.setAgentType(Constants.AGENT_TYPE_WITH_PARENT);
+                tblAgent.setAgentType(Constants.AGENT_TYPE_PARENT);
             }
 
             tblAgent = tblAgentRepo.saveAndFlush(tblAgent);
