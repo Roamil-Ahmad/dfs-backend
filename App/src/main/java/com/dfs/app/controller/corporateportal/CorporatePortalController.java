@@ -1,9 +1,11 @@
 package com.dfs.app.controller.corporateportal;
 
 import com.dfs.app.controller.HelperClass;
+import com.dfs.app.dto.BulkAccountRequest;
 import com.dfs.app.dto.MpinVerificationRequest;
 import com.dfs.app.dto.common.Request;
 import com.dfs.app.service.AccountDetailService;
+import com.dfs.app.service.BulkAccountService;
 import com.dfs.app.util.AuthenticationException;
 import com.dfs.app.util.GenericResponseCode;
 import com.dfs.app.util.RequestValidator;
@@ -23,20 +25,22 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 
 /**
- * Customer MPIN verification for the Corporate Portal.
+ * Corporate Portal endpoints served by app: customer MPIN verification and bulk account upload.
  *
- * <p>The mobile endpoint {@code /v1/mpinVerification} authenticates the caller's app login token.
- * The portal has no app login, so it cannot present one. This endpoint answers the same request
- * with the same response, authenticated as the portal itself.</p>
+ * <p>The portal is a server-side web application with no handset and no app login, so it cannot
+ * present the bearer token the mobile endpoints authenticate. These endpoints authenticate the
+ * portal itself instead.</p>
  *
- * <p>Nothing is reimplemented: it runs the same validator and calls the same
- * {@link AccountDetailService#mpinVerifcation} method as its mobile twin, which resolves the
- * customer from {@code payload.mobileNumber} and compares the encrypted MPIN. The token was only
- * ever satisfying the controller guard.</p>
+ * <p>{@code /v1/corporate/mpinVerification} answers the same request as the mobile
+ * {@code /v1/mpinVerification}, running the same validator and the same
+ * {@link AccountDetailService#mpinVerifcation} method - which resolves the customer from
+ * {@code payload.mobileNumber} and compares the encrypted MPIN. The token was only ever
+ * satisfying the controller guard. It exists chiefly so the Transactions service can verify a
+ * <b>customer's</b> MPIN on the portal funds-transfer path; the MPIN is still required and still
+ * checked.</p>
  *
- * <p>This exists chiefly so the Transactions service can verify a <b>customer's</b> MPIN on the
- * portal funds-transfer path. The MPIN itself is still required and still checked - dropping the
- * app token does not drop the MPIN.</p>
+ * <p>{@code /v1/corporate/bulkAccounts} has no mobile twin - it writes TBL_BULK_ACCOUNTS, which
+ * only the portal feeds.</p>
  *
  * <p><b>Authentication.</b> A shared key in {@code X-Portal-Key}, compared constant-time against
  * {@code corporate.portal.apiKey}. The property has no default, so a deployment that has not set
@@ -58,6 +62,8 @@ public class CorporatePortalController extends HelperClass {
 
     @Autowired
     private AccountDetailService accountDetailService;
+    @Autowired
+    private BulkAccountService bulkAccountService;
 
     @Value("${corporate.portal.apiKey}")
     private String corporatePortalApiKey;
@@ -75,6 +81,28 @@ public class CorporatePortalController extends HelperClass {
                 fromJson(convertObjecttoJson(request.getPayload()), MpinVerificationRequest.class);
         RequestValidator.validateMpinVerificationRequest(mpinVerificationRequest, request);
         HashMap<String, Object> response = accountDetailService.mpinVerifcation(mpinVerificationRequest, request);
+        return getCustomizedResponseFormat(HttpStatus.OK, response);
+    }
+
+    /**
+     * Stores a batch of accounts the portal has collected, in TBL_BULK_ACCOUNTS.
+     *
+     * <p>Takes a list so a batch is one call rather than one request per row; a single account is
+     * a list of one. The whole batch is written in one transaction, so a bad row rejects the
+     * submission outright instead of leaving a partial batch to reconcile.</p>
+     *
+     * <p>Authenticated by the portal key, like everything else here - the portal has no app login.</p>
+     */
+    @PostMapping("/v1/corporate/bulkAccounts")
+    public ResponseEntity<HashMap<String, Object>> bulkAccounts(@RequestBody Request request,
+                                                                HttpServletRequest httpServletRequest)
+            throws JsonProcessingException {
+
+        authenticatePortal(httpServletRequest);
+        BulkAccountRequest bulkAccountRequest =
+                fromJson(convertObjecttoJson(request.getPayload()), BulkAccountRequest.class);
+        RequestValidator.validateBulkAccountRequest(bulkAccountRequest);
+        HashMap<String, Object> response = bulkAccountService.saveBulkAccounts(bulkAccountRequest, request);
         return getCustomizedResponseFormat(HttpStatus.OK, response);
     }
 

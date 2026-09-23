@@ -123,6 +123,7 @@ a broken endpoint.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/v1/corporate/mpinVerification` | Verify a customer MPIN |
+| POST | `/v1/corporate/bulkAccounts` | Upload a batch of accounts |
 
 ```jsonc
 { "mobileNumber": "0300xxxxxxx", "mpin": "1234" }
@@ -235,6 +236,53 @@ The `code` is the `utilityCompanyCode` below — **not** `billerCode`.
 
 **3 · `billPayment`** — the same three fields plus `fromAccountNid` and `amount`, both required.
 Amount must parse as a number and be greater than zero.
+
+---
+
+## Bulk account upload
+
+`POST /app/v1/corporate/bulkAccounts` stores a batch of accounts the portal has collected, in
+`TBL_BULK_ACCOUNTS`, for a downstream process to pick up. It has no mobile equivalent — only the
+portal feeds this table.
+
+It takes a **list**, so a batch is one call rather than one request per row. A single account is a
+list of one.
+
+```jsonc
+{
+  "channel": "MOB",
+  "payload": {
+    "accounts": [
+      { "mobileNo": "03001111111",   // required
+        "nidNo": "3520100000001",    // required
+        "accountTitle": "Probe One",
+        "segmentDescr": "Corporate Clients" },
+      { "mobileNo": "03002222222", "nidNo": "3520100000002" }
+    ]
+  }
+}
+```
+
+```json
+{ "responsecode": "000", "messages": "SUCCESS",
+  "data": { "savedCount": 2, "bulkAccountIds": [1, 2] } }
+```
+
+`bulkAccountIds` are the generated `BULK_ACCOUNT_ID` values, in the order you sent the accounts.
+
+**The batch is all-or-nothing.** One invalid row rejects the whole submission and writes nothing,
+naming the offending position so you do not have to work out which line failed:
+
+```json
+{ "responsecode": "111", "messages": "INVALID NID NUMBER at index 1" }
+```
+
+An empty `accounts` list is refused with `At Least One Account Required`. Surrounding spaces are
+stripped, and a field containing only spaces is stored as null rather than blanks.
+
+> Values are stored **as sent, unencrypted**. Elsewhere on the platform the identity number and
+> account title are encrypted at rest; this intake table keeps them readable so the process that
+> consumes the batch can use them directly. Treat the table as sensitive accordingly.
 
 ---
 
