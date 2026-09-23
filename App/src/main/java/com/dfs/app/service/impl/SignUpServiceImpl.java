@@ -1,6 +1,7 @@
 package com.dfs.app.service.impl;
 
 import com.dfs.app.controller.HelperClass;
+import com.dfs.app.dto.EmployeeOnboardConfirmRequest;
 import com.dfs.app.dto.GenerateNotificationRequest;
 import com.dfs.app.dto.MobileRegistrationRequest;
 import com.dfs.app.dto.UploadDocumentRequest;
@@ -22,16 +23,30 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.util.*;
 
 @Service
 public class SignUpServiceImpl extends HelperClass implements SignUpService {
+
+    private static final Logger log = LoggerFactory.getLogger(SignUpServiceImpl.class);
     @Autowired
     private QrService qrService;
     @Autowired
     private TblCustomerAllRepo tblCustomerAllRepo;
     @Autowired
     private TblCustomerRepo tblCustomerRepo;
+    @Autowired
+    private TblBulkAccountRepo tblBulkAccountRepo;
+    @Autowired
+    private LkpSegmentRepo lkpSegmentRepo;
+    @Value("${employee.onboard.confirm.url}")
+    private String employeeOnboardConfirmUrl;
+    @Value("${employee.onboard.key}")
+    private String employeeOnboardKey;
     @Autowired
     private TblAccountRepo tblAccountRepo;
     @Autowired
@@ -163,7 +178,13 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
             throw new CustomDataNotFoundException(GenericResponseCode.DEVICE_NOT_VERIFIED.getResponseCode());
         }
 
-        TblCustomer tblCustomer = saveTblCustomer(customerKycRequest, tblCustomerAll);
+        // An account parked by the employee-onboard partner carries the segment it should get. No
+        // row means an ordinary signup, which keeps the segment it always had.
+        TblBulkAccount bulkAccount = findBulkAccount(customerKycRequest.getMobileNumber(),
+                customerKycRequest.getNidNumber());
+        LkpSegment bulkSegment = resolveBulkSegment(bulkAccount);
+
+        TblCustomer tblCustomer = saveTblCustomer(customerKycRequest, tblCustomerAll, bulkSegment);
         if (tblCustomer == null) {
             throw new CustomDataNotFoundException(GenericResponseCode.TECHNICAL_ISSUE.getResponseCode());
         }
@@ -195,6 +216,12 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
         uploadDocumentRequest.setFiles(customerKycRequest.getDocumentFiles());
         documentService.uploadDocument(uploadDocumentRequest, apiRequest, BigDecimal.valueOf(tblAppUser.getAppUserId()));
         saveTblMultiLanguage(tblCustomer, customerKycRequest);
+        // The partner that parked this request is told the outcome once the account is really
+        // committed - telling it OPEN for a row that then rolled back would leave the two systems
+        // disagreeing with no way back.
+        confirmEmployeeOnboardAfterCommit(bulkAccount, customerKycRequest.getMobileNumber(),
+                tblAccount.getAccountNo(), tblCustomer.getCustomerId());
+
         return commonService.getResponse(GenericResponseCode.SUCCESS.getResponseCode(), tblAppUser);
 
 
@@ -310,9 +337,91 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
 
     }
 
-    private TblCustomer saveTblCustomer(CustomerKycRequest customerKycRequest, TblCustomerAll tblCustomerAll) {
+    /** The bulk row parked for this mobile and identity number, or null for an ordinary signup. */
+    private TblBulkAccount findBulkAccount(String mobileNumber, String nidNumber) {
+        if (isNullOrEmpty(mobileNumber) || isNullOrEmpty(nidNumber)) {
+            return null;
+        }
+        List<TblBulkAccount> rows =
+                tblBulkAccountRepo.findByMobileNoAndNidNo(mobileNumber.trim(), nidNumber.trim());
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    /**
+     * The segment the bulk row names, or null to leave the database default in place.
+     *
+     * <p>A row naming a segment that LKP_SEGMENT does not have is treated as naming none: the
+     * customer is still onboarded, on the default segment, rather than the whole KYC failing over a
+     * lookup the portal got wrong.</p>
+     */
+    private LkpSegment resolveBulkSegment(TblBulkAccount bulkAccount) {
+        if (bulkAccount == null || isNullOrEmpty(bulkAccount.getSegmentDescr())) {
+            return null;
+        }
+        List<LkpSegment> segments =
+                lkpSegmentRepo.findBySegmentDescrIgnoreCase(bulkAccount.getSegmentDescr().trim());
+        return segments.isEmpty() ? null : segments.get(0);
+    }
+
+    /**
+     * Tells the employee-onboard partner what became of the request it parked.
+     *
+     * <p>Sent after the transaction commits, not before: the account has to exist for the partner
+     * to be told it does. If there was no parked request there is nobody to tell.</p>
+     *
+     * <p>A failure to reach the partner never fails the onboarding - the account is already open,
+     * and refusing it now would be worse than a missed notification.</p>
+     */
+    private void confirmEmployeeOnboardAfterCommit(TblBulkAccount bulkAccount, String mobileNumber,
+                                                   String accountNo, long customerId) {
+        if (bulkAccount == null) {
+            return;
+        }
+        Runnable send = () -> sendEmployeeOnboardConfirm(mobileNumber, "OPEN", accountNo,
+                String.valueOf(customerId), "Account opened");
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    send.run();
+                }
+            });
+        } else {
+            send.run();
+        }
+    }
+
+    /** Posts the confirmation. Never throws - see the caller. */
+    private void sendEmployeeOnboardConfirm(String mobileNumber, String status, String accountNo,
+                                            String customerId, String message) {
+        try {
+            EmployeeOnboardConfirmRequest confirm = new EmployeeOnboardConfirmRequest();
+            confirm.setParkRef("BA-" + mobileNumber);
+            confirm.setStatus(status);
+            confirm.setDfsAccountNo(accountNo);
+            confirm.setDfsCustomerId(customerId);
+            confirm.setMessage(message);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("content-type", "application/json");
+            headers.put("accept", "application/json");
+            headers.put("X-Employee-Onboard-Key", employeeOnboardKey);
+            getResponseFromPostAPI(headers, confirm, employeeOnboardConfirmUrl);
+        } catch (Exception e) {
+            // The account is open either way; the partner can reconcile on parkRef.
+            log.error("employee-onboard confirm failed for parkRef BA-{}", mobileNumber, e);
+        }
+    }
+
+    private TblCustomer saveTblCustomer(CustomerKycRequest customerKycRequest, TblCustomerAll tblCustomerAll,
+                                          LkpSegment bulkSegment) {
         TblCustomer tblCustomer = tblCustomerRepo.findByMobileNumberOrNidNo(aeSencryption.encryptwith256(customerKycRequest.getMobileNumber()), aeSencryption.encryptwith256(customerKycRequest.getNidNumber()));
         tblCustomer = tblCustomer == null ? new TblCustomer() : tblCustomer;
+        // A bulk row naming a segment wins; otherwise the column is left alone and the database
+        // default applies, exactly as before. Only meaningful on insert - the mapping is not
+        // updatable, so an existing customer keeps the segment it already has.
+        if (bulkSegment != null) {
+            tblCustomer.setLkpSegment(bulkSegment);
+        }
         tblCustomer.setNidIssueDate(getDateFromString(customerKycRequest.getNidIssuanceDate()));
         tblCustomer.setDob(getDateFromString(customerKycRequest.getDob()));
         tblCustomer.setNidNo(aeSencryption.encryptwith256(customerKycRequest.getNidNumber()));

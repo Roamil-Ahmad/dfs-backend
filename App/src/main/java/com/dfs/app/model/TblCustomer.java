@@ -130,15 +130,18 @@ public class TblCustomer implements Serializable {
 	private LkpCity lkpCity;
 
 	/**
-	 * The customer's segment, for reading only.
+	 * The customer's segment.
 	 *
-	 * <p>insertable and updatable are false deliberately: SEGMENT_ID is NOT NULL in the database and
-	 * nothing in this service sets it, so letting Hibernate write the column would make it insert a
-	 * null and fail every customer that is created here. The column was previously unmapped, which
-	 * had the same effect of leaving it to the database - this keeps that, and adds the read.</p>
+	 * <p>SEGMENT_ID is NOT NULL but carries DEFAULT 1 with DEFAULT ON NULL, so an insert that leaves
+	 * it null still lands on the default segment - which is what every customer got while the column
+	 * was unmapped, and what still happens when no bulk row names a segment.</p>
+	 *
+	 * <p>updatable stays false because DEFAULT ON NULL applies to inserts only: an update setting it
+	 * null would raise ORA-01407 rather than falling back to the default. The segment is therefore
+	 * set when the customer is created and not changed here afterwards.</p>
 	 */
 	@ManyToOne
-	@JoinColumn(name="SEGMENT_ID", insertable = false, updatable = false)
+	@JoinColumn(name="SEGMENT_ID", insertable = true, updatable = false)
 	private LkpSegment lkpSegment;
 
 	//bi-directional many-to-one association to LkpDistrict

@@ -314,6 +314,25 @@ moved to the envelope:
 Surrounding spaces are stripped, and a field containing only spaces is stored as null rather than
 blanks.
 
+### What happens to an uploaded row
+
+The row is not just stored. When that person later completes `customerKyc` on the app, the
+service looks for a bulk row matching their **mobile number and identity number**:
+
+- **Match found** — the row's `segment` is resolved against `LKP_SEGMENT` and the new customer is
+  created on that segment instead of the default. The employee-onboard partner is then told the
+  outcome on its `/employee-onboard/confirm` endpoint, keyed by `parkRef` = `BA-{mobileNo}`.
+- **No match** — ordinary signup. The customer gets the default segment, and no partner call is
+  made.
+
+Two consequences for what you upload:
+
+- `mobileNo` and `nidNo` must match exactly what the customer later submits in KYC (spaces aside)
+  — they are the join key.
+- The `segment` must already exist in `LKP_SEGMENT`. A name that does not resolve is treated as if
+  none were given: the customer is still onboarded, on the default segment, rather than the KYC
+  failing over a lookup the portal got wrong.
+
 > Values are stored **as sent, unencrypted**. Elsewhere on the platform the identity number and
 > account title are encrypted at rest; this intake table keeps them readable so the process that
 > consumes the batch can use them directly. Treat the table as sensitive accordingly.
