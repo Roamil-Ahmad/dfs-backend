@@ -116,26 +116,19 @@ public class RequestValidator {
     }
 
     /**
-     * Bulk account upload: at least one account, each carrying a mobile number and an identity
-     * number. The batch is rejected whole rather than silently storing the usable rows, so the
-     * caller never has to work out which of its lines got through.
+     * Bulk account upload: one account, carrying a mobile number and an identity number.
+     *
+     * <p>The segment is not checked here - it lives on the envelope and the column accepts null.</p>
      */
     public static void validateBulkAccountRequest(BulkAccountRequest bulkAccountRequest) {
-        if (bulkAccountRequest == null || isNullOrEmpty(bulkAccountRequest.getAccounts())) {
-            throw new ValidationException("At Least One Account Required");
+        if (bulkAccountRequest == null) {
+            throw new ValidationException("INVALID ACCOUNT");
         }
-        for (int i = 0; i < bulkAccountRequest.getAccounts().size(); i++) {
-            BulkAccount account = bulkAccountRequest.getAccounts().get(i);
-            String at = " at index " + i;
-            if (account == null) {
-                throw new ValidationException("INVALID ACCOUNT" + at);
-            }
-            if (isNullOrEmpty(account.getMobileNo()) || account.getMobileNo().trim().isEmpty()) {
-                throw new ValidationException("INVALID MOBILE NUMBER" + at);
-            }
-            if (isNullOrEmpty(account.getNidNo()) || account.getNidNo().trim().isEmpty()) {
-                throw new ValidationException("INVALID NID NUMBER" + at);
-            }
+        if (isNullOrEmpty(bulkAccountRequest.getMobileNo()) || bulkAccountRequest.getMobileNo().trim().isEmpty()) {
+            throw new ValidationException("INVALID MOBILE NUMBER");
+        }
+        if (isNullOrEmpty(bulkAccountRequest.getNidNo()) || bulkAccountRequest.getNidNo().trim().isEmpty()) {
+            throw new ValidationException("INVALID NID NUMBER");
         }
     }
 

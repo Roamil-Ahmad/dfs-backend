@@ -1,6 +1,5 @@
 package com.dfs.app.service.impl;
 
-import com.dfs.app.dto.BulkAccount;
 import com.dfs.app.dto.BulkAccountRequest;
 import com.dfs.app.dto.common.Request;
 import com.dfs.app.model.TblBulkAccount;
@@ -13,18 +12,14 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Stores accounts the Corporate Portal submits in bulk.
+ * Stores an account the Corporate Portal submits, as one row of TBL_BULK_ACCOUNTS.
  *
- * <p>Every row of a submission is written or none of them is: the whole batch is one transaction,
- * so a row that fails half way through does not leave the earlier ones behind for the portal to
- * reconcile against. Resubmitting a corrected batch is then a clean retry.</p>
+ * <p>One call, one row. The segment comes from the request envelope rather than the payload,
+ * because {@code segment} is the field the platform already carries for it.</p>
  */
 @Service
 public class BulkAccountServiceImpl implements BulkAccountService {
@@ -37,24 +32,20 @@ public class BulkAccountServiceImpl implements BulkAccountService {
     @Override
     @Transactional
     public HashMap<String, Object> saveBulkAccounts(BulkAccountRequest bulkAccountRequest, Request request) {
-        List<TblBulkAccount> rows = new ArrayList<>();
-        Date now = new Date();
-        for (BulkAccount account : bulkAccountRequest.getAccounts()) {
-            TblBulkAccount row = new TblBulkAccount();
-            row.setMobileNo(trimToNull(account.getMobileNo()));
-            row.setAccountTitle(trimToNull(account.getAccountTitle()));
-            row.setNidNo(trimToNull(account.getNidNo()));
-            row.setSegmentDescr(trimToNull(account.getSegmentDescr()));
-            // BULK_ACCOUNT_ID comes from TBL_BULK_ACCOUNTS_SEQ through the entity mapping.
-            row.setCreateuser(BigDecimal.ONE);
-            row.setCreatedate(now);
-            rows.add(row);
-        }
-        List<TblBulkAccount> saved = tblBulkAccountRepo.saveAll(rows);
+        TblBulkAccount row = new TblBulkAccount();
+        row.setMobileNo(trimToNull(bulkAccountRequest.getMobileNo()));
+        row.setAccountTitle(trimToNull(bulkAccountRequest.getAccountTitle()));
+        row.setNidNo(trimToNull(bulkAccountRequest.getNidNo()));
+        // SEGMENT_DESCR comes from the envelope's segment, not from the payload.
+        row.setSegmentDescr(trimToNull(request.getSegment()));
+        // BULK_ACCOUNT_ID comes from TBL_BULK_ACCOUNTS_SEQ through the entity mapping.
+        row.setCreateuser(BigDecimal.ONE);
+        row.setCreatedate(new Date());
+
+        TblBulkAccount saved = tblBulkAccountRepo.save(row);
 
         HashMap<String, Object> data = new HashMap<>();
-        data.put("savedCount", saved.size());
-        data.put("bulkAccountIds", saved.stream().map(TblBulkAccount::getBulkAccountId).collect(Collectors.toList()));
+        data.put("bulkAccountId", saved.getBulkAccountId());
         return commonService.getResponse(GenericResponseCode.SUCCESS.getResponseCode(), data);
     }
 

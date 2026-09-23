@@ -4,17 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
- * Payload for the bulk account upload.
+ * Payload for the bulk account upload: one account, one row.
  *
- * <p>A list because the table is a bulk intake: one account is a list of one, and the portal can
- * send a whole batch in a single call rather than one request per row.</p>
+ * <p>The segment is not here. It is taken from {@code segment} on the request envelope, the field
+ * the platform already carries for it, rather than repeated inside the payload.</p>
+ *
+ * <p>The audit columns of TBL_BULK_ACCOUNTS are set by the service, not by the request.</p>
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class BulkAccountRequest {
-    private List<BulkAccount> accounts;
+    private String mobileNo;
+    private String accountTitle;
+    private String nidNo;
 }

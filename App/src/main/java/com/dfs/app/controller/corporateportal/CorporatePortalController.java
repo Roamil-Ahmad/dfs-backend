@@ -85,7 +85,7 @@ public class CorporatePortalController extends HelperClass {
     }
 
     /**
-     * Stores a batch of accounts the portal has collected, in TBL_BULK_ACCOUNTS.
+     * Stores an account the portal has collected, as a row of TBL_BULK_ACCOUNTS.
      *
      * <p>Takes a list so a batch is one call rather than one request per row; a single account is
      * a list of one. The whole batch is written in one transaction, so a bad row rejects the

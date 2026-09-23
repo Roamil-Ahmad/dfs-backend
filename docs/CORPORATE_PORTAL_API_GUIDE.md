@@ -123,7 +123,7 @@ a broken endpoint.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/v1/corporate/mpinVerification` | Verify a customer MPIN |
-| POST | `/v1/corporate/bulkAccounts` | Upload a batch of accounts |
+| POST | `/v1/corporate/bulkAccounts` | Store one account for bulk processing |
 
 ```jsonc
 { "mobileNumber": "0300xxxxxxx", "mpin": "1234" }
@@ -241,44 +241,40 @@ Amount must parse as a number and be greater than zero.
 
 ## Bulk account upload
 
-`POST /app/v1/corporate/bulkAccounts` stores a batch of accounts the portal has collected, in
-`TBL_BULK_ACCOUNTS`, for a downstream process to pick up. It has no mobile equivalent — only the
-portal feeds this table.
+`POST /app/v1/corporate/bulkAccounts` stores one account in `TBL_BULK_ACCOUNTS`, for a downstream
+process to pick up. It has no mobile equivalent — only the portal feeds this table.
 
-It takes a **list**, so a batch is one call rather than one request per row. A single account is a
-list of one.
+**One call, one row.** Send a request per account.
 
 ```jsonc
 {
   "channel": "MOB",
+  "segment": "Corporate Clients",   // <- SEGMENT_DESCR comes from HERE, the envelope
   "payload": {
-    "accounts": [
-      { "mobileNo": "03001111111",   // required
-        "nidNo": "3520100000001",    // required
-        "accountTitle": "Probe One",
-        "segmentDescr": "Corporate Clients" },
-      { "mobileNo": "03002222222", "nidNo": "3520100000002" }
-    ]
+    "mobileNo": "03001111111",      // required
+    "nidNo": "3520100000001",       // required
+    "accountTitle": "Probe One"     // optional
   }
 }
 ```
 
 ```json
-{ "responsecode": "000", "messages": "SUCCESS",
-  "data": { "savedCount": 2, "bulkAccountIds": [1, 2] } }
+{ "responsecode": "000", "messages": "SUCCESS", "data": { "bulkAccountId": 3 } }
 ```
 
-`bulkAccountIds` are the generated `BULK_ACCOUNT_ID` values, in the order you sent the accounts.
+The segment uses the envelope's existing `segment` field rather than repeating it in the payload.
+It is optional here — omit it and `SEGMENT_DESCR` is stored as null. (Note this differs from
+`corporateonboarding`, where `segment` is mandatory.)
 
-**The batch is all-or-nothing.** One invalid row rejects the whole submission and writes nothing,
-naming the offending position so you do not have to work out which line failed:
+Sending `segmentDescr` inside the payload is **rejected** as an unrecognised field — the segment
+moved to the envelope:
 
 ```json
-{ "responsecode": "111", "messages": "INVALID NID NUMBER at index 1" }
+{ "responsecode": "113", "messages": "Unrecognized field \"segmentDescr\" ..." }
 ```
 
-An empty `accounts` list is refused with `At Least One Account Required`. Surrounding spaces are
-stripped, and a field containing only spaces is stored as null rather than blanks.
+Surrounding spaces are stripped, and a field containing only spaces is stored as null rather than
+blanks.
 
 > Values are stored **as sent, unencrypted**. Elsewhere on the platform the identity number and
 > account title are encrypted at rest; this intake table keeps them readable so the process that
