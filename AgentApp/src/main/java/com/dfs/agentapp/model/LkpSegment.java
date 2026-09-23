@@ -17,9 +17,14 @@ import java.util.List;
 public class LkpSegment implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Assigned by the application, not by the database.
+	 *
+	 * <p>This was mapped to the sequence LKP_SEGMENT_SEQ, which does not exist in this schema, so
+	 * every insert failed with ORA-02289. Creating the sequence would be a schema change, so the
+	 * caller sets the id before saving instead.</p>
+	 */
 	@Id
-	@SequenceGenerator(name="LKP_SEGMENT_SEGMENTID_GENERATOR", sequenceName="LKP_SEGMENT_SEQ",allocationSize=1)
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="LKP_SEGMENT_SEGMENTID_GENERATOR")
 	@Column(name="SEGMENT_ID")
 	private long segmentId;
 

@@ -72,6 +72,10 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
     private TblAgentCommissionDistributionRepo tblAgentCommissionDistributionRepo;
     @Autowired
     private LkpSegmentRepo lkpSegmentRepo;
+    @Autowired
+    private LkpStatusRepo lkpStatusRepo;
+    /** LKP_STATUS row the existing segments point at. */
+    private static final long SEGMENT_STATUS_ID = 2L;
     @Value("${account.level.one}")
     private String accountLevelOne;
     @Autowired
@@ -454,16 +458,25 @@ public class SignUpServiceImpl extends HelperClass implements SignUpService {
      */
     private LkpSegment resolveSegment(String segmentName) {
         String name = segmentName.trim();
-        LkpSegment existing = lkpSegmentRepo.findBySegmentDescrIgnoreCase(name);
-        if (existing != null) {
-            return existing;
+        List<LkpSegment> existing = lkpSegmentRepo.findBySegmentDescrIgnoreCase(name);
+        if (!existing.isEmpty()) {
+            return existing.get(0);
         }
-        lkpSegmentRepo.insertSegment(generateUniqueSegmentCode(name), name);
-        LkpSegment created = lkpSegmentRepo.findBySegmentDescrIgnoreCase(name);
-        if (created == null) {
-            throw new CustomDataNotFoundException(GenericResponseCode.TECHNICAL_ISSUE.getResponseCode());
-        }
-        return created;
+
+        LkpSegment segment = new LkpSegment();
+        // SEGMENT_ID is set here rather than generated: the entity used to map it to
+        // LKP_SEGMENT_SEQ, which this schema does not have. Two callers racing here choose the
+        // same id and the primary key rejects the loser, rather than a duplicate being written.
+        LkpSegment highest = lkpSegmentRepo.findTopByOrderBySegmentIdDesc();
+        segment.setSegmentId(highest == null ? 1L : highest.getSegmentId() + 1L);
+        segment.setSegmentCode(generateUniqueSegmentCode(name));
+        segment.setSegmentDescr(name);
+        segment.setIsActive(Constants.YES);
+        // Matches what the rows already in the table carry.
+        lkpStatusRepo.findById(SEGMENT_STATUS_ID).ifPresent(segment::setLkpStatus);
+        segment.setCreateuser(BigDecimal.ONE);
+        segment.setCreatedate(new Date());
+        return lkpSegmentRepo.saveAndFlush(segment);
     }
 
     /**
