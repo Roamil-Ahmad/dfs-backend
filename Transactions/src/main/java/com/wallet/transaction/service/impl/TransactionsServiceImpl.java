@@ -352,8 +352,9 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
                 // only the credential presented to app differs.
                 String reultMpin;
                 if (portalCall) {
-                    reultMpin = checkCustomerMpinForPortal(tblAccount.getAccountNo(),
-                            fundTransferRequest.getMpin(), request.getImieNo());
+                    reultMpin = checkMpinForPortal(tblAccount.getAccountNo(),
+                            fundTransferRequest.getMpin(), request.getImieNo(),
+                            tblAccount.getTblCustomer() == null);
                 } else {
                     reultMpin = agentChannelCode.equalsIgnoreCase(request.getChannel())
                             ? this.checkAgentMpinValidation(tblAccount.getAccountNo(), fundTransferRequest.getMpin(),
@@ -2468,13 +2469,16 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
     }
 
     /**
-     * Verifies a CUSTOMER MPIN for a Corporate Portal call.
+     * Verifies the MPIN for a Corporate Portal call, against whichever service owns it.
      *
      * <p>Posts the same payload {@link #checkMpinValidation} posts, to app's portal-key twin of
-     * the same endpoint, presenting the shared portal key instead of a bearer token. The MPIN is
-     * still required and still compared by app; only the caller's own credential changes.</p>
+     * the same endpoint, presenting the shared portal key instead of a bearer token.
+     * The corporate portal sends a single channel for every call, so the account decides which
+     * service is asked: one with no customer behind it belongs to an agent. The MPIN is still
+     * required and still compared by the owning service; only the caller's own credential changes.</p>
      */
-    private String checkCustomerMpinForPortal(String mobNo, String mPin, String imei) throws Exception {
+    private String checkMpinForPortal(String mobNo, String mPin, String imei, boolean agentAccount)
+            throws Exception {
         MpinRequest mpinRequest = new MpinRequest();
         MpinPayload payload = new MpinPayload();
         payload.setMobileNumber(mobNo);
@@ -2485,7 +2489,15 @@ public class TransactionsServiceImpl extends HelperClass implements Transactions
         headers.put("content-type", "application/json");
         headers.put("accept", "application/json");
         headers.put("X-Portal-Key", corporatePortalApiKey);
-        return getResponseFromPostAPILms(headers, mpinRequest, corporateMpinVerificationUrl);
+        // An agent MPIN lives in agentapp and a customer MPIN in app; neither service knows the
+        // other's. The portal sends one channel for everything, so the account decides: an account
+        // with no customer behind it is an agent's.
+        // Reuses agent.mpin.verification.url rather than carrying a second copy of the same host:
+        // the portal twin sits beside the mobile endpoint, under /v1/corporate.
+        String url = agentAccount
+                ? agentMpinVerificationUrl.replace("/v1/mpinVerification", "/v1/corporate/mpinVerification")
+                : corporateMpinVerificationUrl;
+        return getResponseFromPostAPILms(headers, mpinRequest, url);
     }
 
     @Override

@@ -45,6 +45,23 @@ Two things to be clear about:
 - **The key is a bearer secret for money movement.** Keep it server-side. It must never reach a
   browser, a mobile bundle, or a log. Send it only over the internal network or TLS.
 
+### Customers and agents are both supported
+
+The portal sends its own channel (`COP`) on every call, so the channel cannot say whether a wallet
+belongs to a customer or an agent. The **account** decides instead: one with no customer behind it
+is an agent's.
+
+That matters for the MPIN, because the two are held in different services and neither knows the
+other's — a customer verified against the agent service is rejected however correct the PIN is:
+
+| Payer wallet | MPIN checked by |
+| --- | --- |
+| Customer | `app` |
+| Agent | `agentapp` |
+
+Nothing in the request selects this, and nothing needs to: send the payer in `mobileNumber` and the
+right service is asked.
+
 ### The MPIN is still required
 
 Dropping the login token does **not** drop the MPIN. `fundsTransferLocal` still verifies the
@@ -122,7 +139,7 @@ a broken endpoint.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | `/v1/corporate/mpinVerification` | Verify a customer MPIN |
+| POST | `/v1/corporate/mpinVerification` | Verify a customer MPIN (agent twin lives on agentapp) |
 | POST | `/v1/corporate/bulkAccounts` | Store one account for bulk processing |
 | POST | `/v1/corporate/accountDetails` | Full details of one wallet |
 

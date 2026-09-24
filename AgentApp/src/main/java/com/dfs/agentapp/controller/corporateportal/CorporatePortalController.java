@@ -2,6 +2,7 @@ package com.dfs.agentapp.controller.corporateportal;
 
 import com.dfs.agentapp.controller.HelperClass;
 import com.dfs.agentapp.dto.ChangeMpinRequest;
+import com.dfs.agentapp.dto.MpinVerificationRequest;
 import com.dfs.agentapp.dto.GetBalanceRequest;
 import com.dfs.agentapp.dto.MiniStatementRequest;
 import com.dfs.agentapp.dto.common.Request;
@@ -109,6 +110,27 @@ public class CorporatePortalController extends HelperClass {
                 fromJson(convertObjecttoJson(request.getPayload()), MiniStatementRequest.class);
         RequestValidator.validateMiniStatmentRequest(miniStatementRequest, request);
         HashMap<String, Object> response = accountDetailService.miniStatement(miniStatementRequest, request);
+        return getCustomizedResponseFormat(HttpStatus.OK, response);
+    }
+
+    /**
+     * Mirrors POST /v1/mpinVerification. Verifies an AGENT MPIN.
+     *
+     * <p>The twin of app's customer endpoint. Which one the Transactions portal transfer calls is
+     * decided by the channel on the request, exactly as the mobile path decides it: an agent MPIN
+     * is held here and a customer MPIN in app, and neither service knows the other's.</p>
+     */
+    @PostMapping("/v1/corporate/mpinVerification")
+    public ResponseEntity<HashMap<String, Object>> mpinVerification(@RequestBody Request request,
+                                                                    HttpServletRequest httpServletRequest)
+            throws JsonProcessingException {
+
+        authenticatePortal(httpServletRequest);
+        applyPortalDeviceMarker(request);
+        MpinVerificationRequest mpinVerificationRequest =
+                fromJson(convertObjecttoJson(request.getPayload()), MpinVerificationRequest.class);
+        RequestValidator.validateMpinVerificationRequest(mpinVerificationRequest, request);
+        HashMap<String, Object> response = accountDetailService.mpinVerifcation(mpinVerificationRequest, request);
         return getCustomizedResponseFormat(HttpStatus.OK, response);
     }
 
