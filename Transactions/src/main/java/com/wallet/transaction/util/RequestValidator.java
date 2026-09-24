@@ -71,11 +71,6 @@ public class RequestValidator {
             throw new ValidationException("Mpin required");
         }
 
-        if (isNullOrEmpty(fundTransferRequest.getAppUserId())) {
-            throw new ValidationException("Appuser id is required");
-        }
-
-
     }
 
     public static void validateTitleFetchForRequestMoneyt(TitleFetchRequetMoneyRequest requetMoneyRequest, Request request) {
